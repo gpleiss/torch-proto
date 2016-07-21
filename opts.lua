@@ -26,7 +26,7 @@ function M.parse(arg)
   ------------- Training options --------------------
   cmd:option('-nEpochs',      0,     'Number of total epochs to run')
   cmd:option('-epochNumber',    1,     'Manual epoch number (useful on restarts)')
-  cmd:option('-batchSize',     32,    'mini-batch size (1 = pure stochastic)')
+  cmd:option('-batchSize',     0,    'mini-batch size (1 = pure stochastic)')
   cmd:option('-testOnly',      'false', 'Run on validation set only')
   cmd:option('-tenCrop',      'false', 'Ten-crop testing')
   ------------- Checkpointing options ---------------
@@ -52,16 +52,30 @@ function M.parse(arg)
   opt.shareGradInput = opt.shareGradInput ~= 'false'
   opt.resetClassifier = opt.resetClassifier ~= 'false'
 
+  -- Model/dataset specific opts --
+  local specificOpts = {}
+
   if opt.dataset == 'imagenet' then
-    -- Default shortcutType=B and nEpochs=90
-    opt.shortcutType = opt.shortcutType == '' and 'B' or opt.shortcutType
-    opt.nEpochs = opt.nEpochs == 0 and 90 or opt.nEpochs
+    specificOpts.shortcutType = 'B'
+    specificOpts.nEpochs = 90
+    specificOpts.batchSize = 32
+
   elseif opt.dataset == 'cifar10' then
-    -- Default shortcutType=A and nEpochs=164
-    opt.shortcutType = opt.shortcutType == '' and 'A' or opt.shortcutType
-    opt.nEpochs = opt.nEpochs == 0 and 164 or opt.nEpochs
+    specificOpts.shortcutType = 'A'
+    specificOpts.nEpochs = 164
+    specificOpts.batchSize = 256
+
   else
     cmd:error('unknown dataset: ' .. opt.dataset)
+  end
+
+  for optKey, specificOptVal in pairs(specificOpts) do
+    local origVal = opt[optKey]
+    if type(origVal) == 'number' and origVal == 0 then
+      opt[optKey] = specificOptVal
+    elseif type(origVal) == 'string' and origVal == '' then
+      opt[optKey] = specificOptVal
+    end
   end
 
   if opt.resetClassifier then
