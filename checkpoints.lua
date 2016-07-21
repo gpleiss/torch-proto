@@ -12,19 +12,21 @@ local Filenames = require 'filenames'
 local checkpoint = {}
 
 function checkpoint.latest(opt)
+  local logger = optim.Logger(Filenames.logger(), true)
+
   if not opt.resume then
-    return nil
+    return nil, nil, logger
   end
 
   local latestPath = Filenames.latest()
   if not paths.filep(latestPath) then
-    return nil
+    return nil, nil, logger
   end
 
   print('=> Loading checkpoint ' .. latestPath)
   local latest = torch.load(latestPath)
   local optimState = torch.load(latest.optimFile)
-  return latest, optimState
+  return latest, optimState, logger
 end
 
 function checkpoint.save(epoch, model, optimState, isBestModel, opt)

@@ -26,6 +26,10 @@ function Filenames.optimState()
   return paths.concat(experimentDir, 'optimState.t7')
 end
 
+function Filenames.logger()
+  return paths.concat(experimentDir, 'logger.txt')
+end
+
 function Filenames.latest()
   return paths.concat(experimentDir, 'latest.t7')
 end

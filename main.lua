@@ -24,7 +24,7 @@ torch.manualSeed(opt.manualSeed)
 cutorch.manualSeedAll(opt.manualSeed)
 
 -- Load previous checkpoint, if it exists
-local checkpoint, optimState = checkpoints.latest(opt)
+local checkpoint, optimState, logger = checkpoints.latest(opt)
 
 -- Create model
 local model, criterion = models.setup(opt, checkpoint)
@@ -46,10 +46,10 @@ local bestTop1 = math.huge
 local bestTop5 = math.huge
 for epoch = startEpoch, opt.nEpochs do
   -- Train for a single epoch
-  local trainTop1, trainTop5, trainLoss = trainer:train(epoch, trainLoader)
+  local trainTop1, trainTop5, trainLoss, trainTime = trainer:train(epoch, trainLoader)
 
   -- Run model on validation set
-  local testTop1, testTop5 = trainer:test(epoch, valLoader)
+  local testTop1, testTop5, testTime = trainer:test(epoch, valLoader)
 
   local bestModel = false
   if testTop1 < bestTop1 then
@@ -58,6 +58,17 @@ for epoch = startEpoch, opt.nEpochs do
     bestTop5 = testTop5
     print(' * Best model ', testTop1, testTop5)
   end
+
+  logger:add({
+    ['iterations'] = trainer.optimState.evalCounter,
+    ['trainTop1'] = trainTop1,
+    ['trainTop5'] = trainTop5,
+    ['trainLoss'] = trainLoss,
+    ['trainTime'] = trainTime,
+    ['testTop1'] = testTop1,
+    ['testTop5'] = testTop5,
+    ['testTime'] = testTime,
+  })
 
   checkpoints.save(epoch, model, trainer.optimState, bestModel, opt)
 end
