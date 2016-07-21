@@ -16,7 +16,7 @@ function M.parse(arg)
   cmd:text()
   cmd:text('Options:')
    ------------ General options --------------------
-  cmd:option('-dataset',   'imagenet', 'Options: imagenet | cifar10')
+  cmd:option('-dataset',   'cifar10', 'Options: imagenet | cifar10')
   cmd:option('-manualSeed', 0,       'Manually set RNG seed')
   cmd:option('-nGPU',     1,       'Number of GPUs to use by default')
   cmd:option('-backend',   'cudnn',   'Options: cudnn | cunn')
