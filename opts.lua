@@ -39,8 +39,6 @@ function M.parse(arg)
   cmd:option('-netType',    'resnet', 'Options: resnet | preresnet')
   cmd:option('-depth',      34,     'ResNet depth: 18 | 34 | 50 | 101 | ...', 'number')
   cmd:option('-shortcutType', '',     'Options: A | B | C')
-  cmd:option('-retrain',    'none',  'Path to model to retrain with')
-  cmd:option('-optimState',  'none',  'Path to an optimState to reload from')
   ---------- Model options ----------------------------------
   cmd:option('-shareGradInput',  'false', 'Share gradInput tensors to reduce memory usage')
   cmd:option('-resetClassifier', 'false', 'Reset the fully connected layer for fine-tuning')
