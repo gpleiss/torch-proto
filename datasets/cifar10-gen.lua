@@ -42,19 +42,19 @@ end
 
 function M.exec(opt, cacheFile)
   print("=> Downloading CIFAR-10 dataset from " .. URL)
-  local ok = os.execute('curl ' .. URL .. ' | tar xz -C gen/')
+  local ok = os.execute('curl ' .. URL .. ' | tar xz -C /tmp')
   assert(ok == true or ok == 0, 'error downloading CIFAR-10')
 
   print(" | combining dataset into a single file")
   local trainData = convertToTensor({
-    'gen/cifar-10-batches-t7/data_batch_1.t7',
-    'gen/cifar-10-batches-t7/data_batch_2.t7',
-    'gen/cifar-10-batches-t7/data_batch_3.t7',
-    'gen/cifar-10-batches-t7/data_batch_4.t7',
-    'gen/cifar-10-batches-t7/data_batch_5.t7',
+    '/tmp/cifar-10-batches-t7/data_batch_1.t7',
+    '/tmp/cifar-10-batches-t7/data_batch_2.t7',
+    '/tmp/cifar-10-batches-t7/data_batch_3.t7',
+    '/tmp/cifar-10-batches-t7/data_batch_4.t7',
+    '/tmp/cifar-10-batches-t7/data_batch_5.t7',
   })
   local testData = convertToTensor({
-    'gen/cifar-10-batches-t7/test_batch.t7',
+    '/tmp/cifar-10-batches-t7/test_batch.t7',
   })
 
   print(" | saving CIFAR-10 dataset to " .. cacheFile)
@@ -62,6 +62,8 @@ function M.exec(opt, cacheFile)
     train = trainData,
     val = testData,
   })
+
+  paths.rmall('/tmp/cifar-10-batches-t7', 'yes')
 end
 
 return M

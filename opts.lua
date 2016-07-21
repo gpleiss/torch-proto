@@ -16,13 +16,11 @@ function M.parse(arg)
   cmd:text()
   cmd:text('Options:')
    ------------ General options --------------------
-  cmd:option('-data',     '',      'Path to dataset')
   cmd:option('-dataset',   'imagenet', 'Options: imagenet | cifar10')
   cmd:option('-manualSeed', 0,       'Manually set RNG seed')
   cmd:option('-nGPU',     1,       'Number of GPUs to use by default')
   cmd:option('-backend',   'cudnn',   'Options: cudnn | cunn')
   cmd:option('-cudnn',    'fastest',  'Options: fastest | default | deterministic')
-  cmd:option('-gen',      'gen',    'Path to save generated files')
   ------------- Data options ------------------------
   cmd:option('-nThreads',      2, 'number of data loading threads')
   ------------- Training options --------------------
@@ -57,13 +55,6 @@ function M.parse(arg)
   opt.resetClassifier = opt.resetClassifier ~= 'false'
 
   if opt.dataset == 'imagenet' then
-    -- Handle the most common case of missing -data flag
-    local trainDir = paths.concat(opt.data, 'train')
-    if not paths.dirp(opt.data) then
-      cmd:error('error: missing ImageNet data directory')
-    elseif not paths.dirp(trainDir) then
-      cmd:error('error: ImageNet missing `train` directory: ' .. trainDir)
-    end
     -- Default shortcutType=B and nEpochs=90
     opt.shortcutType = opt.shortcutType == '' and 'B' or opt.shortcutType
     opt.nEpochs = opt.nEpochs == 0 and 90 or opt.nEpochs

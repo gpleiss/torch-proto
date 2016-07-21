@@ -13,6 +13,7 @@
 --  works for other datasets arragned with the same layout.
 --
 
+local Filenames = require 'filenames'
 local sys = require 'sys'
 local ffi = require 'ffi'
 
@@ -90,8 +91,8 @@ function M.exec(opt, cacheFile)
   local imagePath = torch.CharTensor()  -- path to each image in dataset
   local imageClass = torch.LongTensor() -- class index of each image (class index in self.classes)
 
-  local trainDir = paths.concat(opt.data, 'train')
-  local valDir = paths.concat(opt.data, 'val')
+  local trainDir = Filenames.data('imagenet', 'train')
+  local valDir = Filenames.data('imagenet', 'val')
   assert(paths.dirp(trainDir), 'train directory not found: ' .. trainDir)
   assert(paths.dirp(valDir), 'val directory not found: ' .. valDir)
 
@@ -105,7 +106,7 @@ function M.exec(opt, cacheFile)
   local trainImagePath, trainImageClass = findImages(trainDir, classToIdx)
 
   local info = {
-    basedir = opt.data,
+    basedir = Filenames.data('imagenet'),
     classList = classList,
     train = {
       imagePath = trainImagePath,
