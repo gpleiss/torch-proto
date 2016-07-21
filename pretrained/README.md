@@ -14,25 +14,25 @@ The ResNet-50 model has a batch normalization layer after the addition, instead 
 
 ##### ImageNet 1-crop error rates (224x224)
 
-| Network       | Top-1 error | Top-5 error |
+| Network     | Top-1 error | Top-5 error |
 | ------------- | ----------- | ----------- |
-| ResNet-18     | 30.43       | 10.76       |
-| ResNet-34     | 26.73       | 8.74        |
-| ResNet-50     | 24.01       | 7.02        |
-| ResNet-101    | 22.44       | 6.21        |
-| ResNet-152    | 22.16       | 6.16        |
-| ResNet-200    | 21.66 <sup>[1](#notes)</sup> | 5.79        |
+| ResNet-18    | 30.43     | 10.76     |
+| ResNet-34    | 26.73     | 8.74      |
+| ResNet-50    | 24.01     | 7.02      |
+| ResNet-101   | 22.44     | 6.21      |
+| ResNet-152   | 22.16     | 6.16      |
+| ResNet-200   | 21.66 <sup>[1](#notes)</sup> | 5.79      |
 
 ##### ImageNet 10-crop error rates
 
-| Network       | Top-1 error | Top-5 error |
+| Network     | Top-1 error | Top-5 error |
 | ------------- | ----------- | ----------- |
-| ResNet-18     | 28.22       | 9.42        |
-| ResNet-34     | 24.76       | 7.35        |
-| ResNet-50     | 22.24       | 6.08        |
-| ResNet-101    | 21.08       | 5.35        |
-| ResNet-152    | 20.69       | 5.21        |
-| ResNet-200    | 20.15       | 4.93        |
+| ResNet-18    | 28.22     | 9.42      |
+| ResNet-34    | 24.76     | 7.35      |
+| ResNet-50    | 22.24     | 6.08      |
+| ResNet-101   | 21.08     | 5.35      |
+| ResNet-152   | 20.69     | 5.21      |
+| ResNet-200   | 20.15     | 4.93      |
 
 ##### ImageNet charts
 
@@ -64,12 +64,12 @@ th classify.lua resnet-101.t7 img1.jpg img2.jpg ...
 ``` 
 Example output:
 ```
-Classes for     cat.jpg
-0.77302575111389        Egyptian cat
-0.060410376638174       tabby, tabby cat 
-0.040622022002935       tiger cat
-0.025837801396847       lynx, catamount
-0.018691379576921       window screen
+Classes for    cat.jpg
+0.77302575111389      Egyptian cat
+0.060410376638174     tabby, tabby cat
+0.040622022002935     tiger cat
+0.025837801396847     lynx, catamount
+0.018691379576921     window screen
 ```
 
 

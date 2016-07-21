@@ -40,14 +40,14 @@ The trained models achieve better error rates than the [original ResNet models](
 
 #### Single-crop (224x224) validation error rate
 
-| Network       | Top-1 error | Top-5 error |
+| Network     | Top-1 error | Top-5 error |
 | ------------- | ----------- | ----------- |
-| ResNet-18     | 30.43       | 10.76       |
-| ResNet-34     | 26.73       | 8.74        |
-| ResNet-50     | 24.01       | 7.02        |
-| ResNet-101    | 22.44       | 6.21        |
-| ResNet-152    | 22.16       | 6.16        |
-| ResNet-200    | 21.66       | 5.79        |
+| ResNet-18    | 30.43     | 10.76     |
+| ResNet-34    | 26.73     | 8.74      |
+| ResNet-50    | 24.01     | 7.02      |
+| ResNet-101   | 22.44     | 6.21      |
+| ResNet-152   | 22.16     | 6.16      |
+| ResNet-200   | 21.66     | 5.79      |
 
 ## Notes
 

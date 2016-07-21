@@ -42,8 +42,8 @@ end
 
 function FakeDataset:get(i)
   return {
-    input = torch.Tensor(3, 800, 600):uniform(),
-    target = 42,
+   input = torch.Tensor(3, 800, 600):uniform(),
+   target = 42,
   }
 end
 
@@ -55,8 +55,8 @@ end
 function FakeDataset:preprocess()
   -- Scale smaller side to 256 and take 224x224 center-crop
   return t.Compose{
-    t.Scale(256),
-    t.CenterCrop(224),
+   t.Scale(256),
+   t.CenterCrop(224),
   }
 end
 
