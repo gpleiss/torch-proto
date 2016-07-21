@@ -14,7 +14,7 @@ local optim = require 'optim'
 local M = {}
 local Trainer = torch.class('resnet.Trainer', M)
 
-function Trainer:__init(model, criterion, opt, optimState)
+function Trainer:__init(model, criterion, opt, optimState, logger)
   self.model = model
   self.criterion = criterion
   self.optimState = optimState or {
@@ -27,6 +27,17 @@ function Trainer:__init(model, criterion, opt, optimState)
   }
   self.opt = opt
   self.params, self.gradParams = model:getParameters()
+
+  self.logger = logger or {
+    iterations = {},
+    trainTop1 = {},
+    trainTop5 = {},
+    trainLoss = {},
+    trainTime = {},
+    valTop1 = {},
+    valTop5 = {},
+    valTime = {},
+  }
 end
 
 function Trainer:train(epoch, dataloader)
@@ -79,9 +90,16 @@ function Trainer:train(epoch, dataloader)
 
     timer:reset()
     dataTimer:reset()
+
+    if N > 2048 then break end
   end
 
-  return top1Sum / N, top5Sum / N, lossSum / N, timeSum
+  return {
+    top1 = top1Sum / N,
+    top5 = top5Sum / N,
+    loss = lossSum / N,
+    time = timeSum,
+  }
 end
 
 function Trainer:test(epoch, dataloader)
@@ -124,7 +142,22 @@ function Trainer:test(epoch, dataloader)
   print((' * Finished epoch # %d    top1: %7.3f  top5: %7.3f\n'):format(
     epoch, top1Sum / N, top5Sum / N))
 
-  return top1Sum / N, top5Sum / N, timeSum
+  return {
+    top1 = top1Sum / N,
+    top5 = top5Sum / N,
+    time = timeSum,
+  }
+end
+
+function Trainer:log(trainResults, valResults)
+  table.insert(self.logger.iterations, self.optimState.evalCounter)
+  table.insert(self.logger.trainTop1, trainResults.top1)
+  table.insert(self.logger.trainTop5, trainResults.top5)
+  table.insert(self.logger.trainLoss, trainResults.loss)
+  table.insert(self.logger.trainTime, trainResults.time)
+  table.insert(self.logger.valTop1, valResults.top1)
+  table.insert(self.logger.valTop5, valResults.top5)
+  table.insert(self.logger.valTime, valResults.time)
 end
 
 function Trainer:computeScore(output, target, nCrops)
