@@ -30,47 +30,51 @@ local checkpoint, optimState, logger = checkpoints.latest(opt)
 local model, criterion = models.setup(opt, checkpoint)
 
 -- Data loading
-local trainLoader, valLoader = DataLoader.create(opt)
+local trainLoader, valLoader, testLoader = DataLoader.create(opt)
 
 -- The trainer handles the training loop and evaluation on validation set
 local trainer = Trainer(model, criterion, opt, optimState)
 
-if opt.testOnly then
-  local top1Err, top5Err = trainer:test(0, valLoader)
-  print(string.format(' * Results top1: %6.3f  top5: %6.3f', top1Err, top5Err))
-  return
-end
+if not opt.testOnly then
+  local startEpoch = checkpoint and checkpoint.epoch + 1 or opt.epochNumber
+  local bestTop1 = math.huge
+  local bestTop5 = math.huge
+  for epoch = startEpoch, opt.nEpochs do
+    -- Train for a single epoch
+    local trainTop1, trainTop5, trainLoss, trainTime = trainer:train(epoch, trainLoader)
 
-local startEpoch = checkpoint and checkpoint.epoch + 1 or opt.epochNumber
-local bestTop1 = math.huge
-local bestTop5 = math.huge
-for epoch = startEpoch, opt.nEpochs do
-  -- Train for a single epoch
-  local trainTop1, trainTop5, trainLoss, trainTime = trainer:train(epoch, trainLoader)
+    -- Run model on validation set
+    local valTop1, valTop5, valTime = trainer:test(epoch, valLoader)
 
-  -- Run model on validation set
-  local testTop1, testTop5, testTime = trainer:test(epoch, valLoader)
+    local bestModel = false
+    if valTop1 < bestTop1 then
+      bestModel = true
+      bestTop1 = valTop1
+      bestTop5 = valTop5
+      print(' * Best model ', valTop1, valTop5)
+    end
 
-  local bestModel = false
-  if testTop1 < bestTop1 then
-    bestModel = true
-    bestTop1 = testTop1
-    bestTop5 = testTop5
-    print(' * Best model ', testTop1, testTop5)
+    logger:add({
+      ['iterations'] = trainer.optimState.evalCounter,
+      ['trainTop1'] = trainTop1,
+      ['trainTop5'] = trainTop5,
+      ['trainLoss'] = trainLoss,
+      ['trainTime'] = trainTime,
+      ['valTop1'] = valTop1,
+      ['valTop5'] = valTop5,
+      ['valTime'] = valTime,
+    })
+
+    checkpoints.save(epoch, model, trainer.optimState, bestModel, opt)
   end
 
-  logger:add({
-    ['iterations'] = trainer.optimState.evalCounter,
-    ['trainTop1'] = trainTop1,
-    ['trainTop5'] = trainTop5,
-    ['trainLoss'] = trainLoss,
-    ['trainTime'] = trainTime,
-    ['testTop1'] = testTop1,
-    ['testTop5'] = testTop5,
-    ['testTime'] = testTime,
-  })
-
-  checkpoints.save(epoch, model, trainer.optimState, bestModel, opt)
+  print(string.format(' * Finished top1: %6.3f  top5: %6.3f', bestTop1, bestTop5))
 end
 
-print(string.format(' * Finished top1: %6.3f  top5: %6.3f', bestTop1, bestTop5))
+local top1Err, top5Err = trainer:test(0, testLoader)
+logger:add({
+  ['testTop1'] = top1Err,
+  ['testTop5'] = top5Err,
+})
+print(string.format(' * Results top1: %6.3f  top5: %6.3f', top1Err, top5Err))
+return

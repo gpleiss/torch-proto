@@ -27,7 +27,7 @@ function M.parse(arg)
   cmd:option('-nEpochs',      0,     'Number of total epochs to run')
   cmd:option('-epochNumber',    1,     'Manual epoch number (useful on restarts)')
   cmd:option('-batchSize',     0,    'mini-batch size (1 = pure stochastic)')
-  cmd:option('-testOnly',      'false', 'Run on validation set only')
+  cmd:option('-testOnly',      false, 'Run on validation set only')
   cmd:option('-tenCrop',      'false', 'Ten-crop testing')
   ------------- Checkpointing options ---------------
   cmd:option('-resume',       false,  'Resume from the latest checkpoint in this directory')
@@ -47,7 +47,6 @@ function M.parse(arg)
 
   local opt = cmd:parse(arg or {})
 
-  opt.testOnly = opt.testOnly ~= 'false'
   opt.tenCrop = opt.tenCrop ~= 'false'
   opt.shareGradInput = opt.shareGradInput ~= 'false'
   opt.resetClassifier = opt.resetClassifier ~= 'false'

@@ -116,6 +116,10 @@ function M.exec(opt, cacheFile)
       imagePath = valImagePath,
       imageClass = valImageClass,
     },
+    test = {
+      imagePath = valImagePath,
+      imageClass = valImageClass,
+    },
   }
 
   print(" | saving list of images to " .. cacheFile)

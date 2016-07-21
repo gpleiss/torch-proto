@@ -14,7 +14,7 @@ local checkpoint = {}
 function checkpoint.latest(opt)
   local logger = optim.Logger(Filenames.logger(), true)
 
-  if not opt.resume then
+  if not opt.resume and not opt.testOnly then
     return nil, nil, logger
   end
 
