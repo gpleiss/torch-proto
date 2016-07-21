@@ -32,8 +32,7 @@ function M.parse(arg)
   cmd:option('-testOnly',      'false', 'Run on validation set only')
   cmd:option('-tenCrop',      'false', 'Ten-crop testing')
   ------------- Checkpointing options ---------------
-  cmd:option('-save',        'checkpoints', 'Directory in which to save checkpoints')
-  cmd:option('-resume',       'none',      'Resume from the latest checkpoint in this directory')
+  cmd:option('-resume',       false,  'Resume from the latest checkpoint in this directory')
   ---------- Optimization options ----------------------
   cmd:option('-LR',          0.1,  'initial learning rate')
   cmd:option('-momentum',      0.9,  'momentum')
@@ -56,10 +55,6 @@ function M.parse(arg)
   opt.tenCrop = opt.tenCrop ~= 'false'
   opt.shareGradInput = opt.shareGradInput ~= 'false'
   opt.resetClassifier = opt.resetClassifier ~= 'false'
-
-  if not paths.dirp(opt.save) and not paths.mkdir(opt.save) then
-    cmd:error('error: unable to create checkpoint directory: ' .. opt.save .. '\n')
-  end
 
   if opt.dataset == 'imagenet' then
     -- Handle the most common case of missing -data flag

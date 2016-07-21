@@ -19,7 +19,7 @@ local M = {}
 function M.setup(opt, checkpoint)
   local model
   if checkpoint then
-    local modelPath = paths.concat(opt.resume, checkpoint.modelFile)
+    local modelPath = checkpoint.modelFile
     assert(paths.filep(modelPath), 'Saved model not found: ' .. modelPath)
     print('=> Resuming model from ' .. modelPath)
     model = torch.load(modelPath)
