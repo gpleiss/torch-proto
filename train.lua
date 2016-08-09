@@ -90,8 +90,6 @@ function Trainer:train(epoch, dataloader)
 
     timer:reset()
     dataTimer:reset()
-
-    if N > 2048 then break end
   end
 
   return {
