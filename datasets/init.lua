@@ -9,7 +9,6 @@
 --  ImageNet and CIFAR-10 datasets
 --
 
-local Filenames = require 'filenames'
 local M = {}
 
 local function isvalid(opt, cachePath)
@@ -18,9 +17,9 @@ local function isvalid(opt, cachePath)
 end
 
 function M.create(opt, split)
-  local cachePath = Filenames.cacheFile(opt.dataset)
+  local cachePath = paths.concat(opt.datasetDir, opt.dataset .. '.t7')
   if not paths.filep(cachePath) or not isvalid(opt, cachePath) then
-    paths.mkdir(Filenames.data(opt.dataset))
+    paths.mkdir(opt.datasetDir)
 
     local script = paths.dofile(opt.dataset .. '-gen.lua')
     script.exec(opt, cachePath)

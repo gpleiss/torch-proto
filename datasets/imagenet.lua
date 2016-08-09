@@ -21,7 +21,7 @@ function ImagenetDataset:__init(imageInfo, opt, split)
   self.imageInfo = imageInfo[split]
   self.opt = opt
   self.split = split
-  self.dir = Filenames.data('imagenet', split)
+  self.dir = paths.concat(opt.datasetDir, split)
   assert(paths.dirp(self.dir), 'directory does not exist: ' .. self.dir)
 end
 

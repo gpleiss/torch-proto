@@ -7,8 +7,6 @@
 --  of patent rights can be found in the PATENTS file in the same directory.
 --
 
-local Filenames = require 'filenames'
-
 local checkpoint = {}
 
 function checkpoint.latest(opt)
@@ -16,36 +14,32 @@ function checkpoint.latest(opt)
     return nil
   end
 
-  local latestPath = Filenames.latest()
+  local latestPath = opt.latestFilename
   if not paths.filep(latestPath) then
     return nil
   end
 
   print('=> Loading checkpoint ' .. latestPath)
   local latest = torch.load(latestPath)
-  local optimState = torch.load(latest.optimFile)
-  local logger = torch.load(latest.loggerFile)
+  local optimState = torch.load(latest.optimFilename)
+  local logger = torch.load(latest.loggerFilename)
   return latest, optimState, logger
 end
 
 function checkpoint.save(epoch, model, optimState, logger, isBestModel, opt)
   local function saveModel(m)
-    local modelFile = Filenames.model()
-    local optimFile = Filenames.optimState()
-    local loggerFile = Filenames.logger()
-
-    torch.save(modelFile, m)
-    torch.save(optimFile, optimState)
-    torch.save(loggerFile, logger)
-    torch.save(Filenames.latest(), {
+    torch.save(opt.modelFilename, m)
+    torch.save(opt.optimFilename, optimState)
+    torch.save(opt.loggerFilename, logger)
+    torch.save(opt.latestFilename, {
       epoch = epoch,
-      modelFile = modelFile,
-      optimFile = optimFile,
-      loggerFile = loggerFile,
+      modelFilename = opt.modelFilename,
+      optimFilename = opt.optimFilename,
+      loggerFilename = opt.loggerFilename,
     })
 
     if isBestModel then
-      torch.save(Filenames.model() .. '.best', m)
+      torch.save(opt.modelFilename .. '.best', m)
     end
   end
 

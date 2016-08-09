@@ -15,7 +15,10 @@ function M.parse(arg)
   cmd:text('See https://github.com/facebook/fb.resnet.torch/blob/master/TRAINING.md for examples')
   cmd:text()
   cmd:text('Options:')
-   ------------ General options --------------------
+  ------------- File options --------------------
+  cmd:option('-data',  os.getenv('DATA_DIR') or '', 'Path to datasets')
+  cmd:option('-save',  os.getenv('SAVE_DIR') or '', 'Directory in which to save checkpoints/results')
+  ------------- General options --------------------
   cmd:option('-dataset',   'cifar10', 'Options: imagenet | cifar10')
   cmd:option('-manualSeed', 0,       'Manually set RNG seed')
   cmd:option('-nGPU',     1,       'Number of GPUs to use by default')
@@ -82,6 +85,14 @@ function M.parse(arg)
       cmd:error('-nClasses required when resetClassifier is set')
     end
   end
+
+  -- Filename opts
+  opt.modelFilename = paths.concat(opt.save, 'model.t7')
+  opt.optimFilename = paths.concat(opt.save, 'optimState.t7')
+  opt.loggerFilename = paths.concat(opt.save, 'log.t7')
+  opt.latestFilename = paths.concat(opt.save, 'latest.t7')
+
+  opt.datasetDir = paths.concat(opt.data, opt.dataset)
 
   return opt
 end
