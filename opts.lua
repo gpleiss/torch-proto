@@ -41,10 +41,12 @@ function M.parse(arg)
   cmd:option('-weightDecay',    1e-4,  'weight decay')
   ---------- Model options ----------------------------------
   cmd:option('-netType',    'resnet', 'Options: resnet | preresnet')
-  cmd:option('-depth',      34,     'ResNet depth: 18 | 34 | 50 | 101 | ...', 'number')
+  cmd:option('-depth',      0,     'ResNet depth: 18 | 34 | 50 | 101 | ...', 'number')
   cmd:option('-shortcutType', '',     'Options: A | B | C')
   cmd:option('-transitionType', 'full',     'Options: dense | partial')
   cmd:option('-growthRate', 12,  'How many filters to add each layer')
+  cmd:option('-nInitChannels', 16,  'Number of channels to start with initially')
+  cmd:option('-dropRate', 0,     'Dropout rate')
   ---------- Model options ----------------------------------
   cmd:option('-shareGradInput',  'false', 'Share gradInput tensors to reduce memory usage')
   cmd:option('-resetClassifier', 'false', 'Reset the fully connected layer for fine-tuning')
@@ -60,7 +62,12 @@ function M.parse(arg)
   -- Model/dataset specific opts --
   local specificOpts = {}
 
-  if opt.dataset == 'imagenet' then
+  if opt.netType == 'densenet' then
+    specificOpts.depth = 40
+    specificOpts.nEpochs = 300
+    specificOpts.batchSize = 64
+
+  elseif opt.dataset == 'imagenet' then
     specificOpts.shortcutType = 'B'
     specificOpts.nEpochs = 90
     specificOpts.batchSize = 32
