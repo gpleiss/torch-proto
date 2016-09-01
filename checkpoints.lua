@@ -10,7 +10,7 @@
 local checkpoint = {}
 
 function checkpoint.latest(opt)
-  if not opt.resume and not opt.testOnly then
+  if not opt.resume then
     return nil
   end
 

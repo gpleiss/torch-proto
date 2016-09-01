@@ -26,16 +26,15 @@ cutorch.manualSeedAll(opt.manualSeed)
 -- Load previous checkpoint, if it exists
 local checkpoint, optimState, logger = checkpoints.latest(opt)
 
--- Create model
-local model, criterion = models.setup(opt, checkpoint)
-
 -- Data loading
 local trainLoader, valLoader, testLoader = DataLoader.create(opt)
 
--- The trainer handles the training loop and evaluation on validation set
-local trainer = Trainer(model, criterion, opt, optimState, logger)
-
 if not opt.testOnly then
+  -- Create model
+  local model, criterion = models.setup(opt, checkpoint)
+  -- The trainer handles the training loop and evaluation on validation set
+  local trainer = Trainer(model, criterion, opt, optimState, logger)
+
   local startEpoch = checkpoint and checkpoint.epoch + 1 or opt.epochNumber
   local bestTop1 = math.huge
   local bestTop5 = math.huge
@@ -61,8 +60,10 @@ if not opt.testOnly then
   print(string.format(' * Finished top1: %6.3f  top5: %6.3f', bestTop1, bestTop5))
 end
 
-local testResults = trainer:test(0, testLoader)
-trainer.logger.testTop1 = testResults.top1
-trainer.logger.testTop5 = testResults.top5
-checkpoints.save(0, model, trainer.optimState, trainer.logger, bestModel, opt)
+-- Testing
+local bestModel = torch.load(opt.modelFilename .. '.best')
+local tester = Trainer(bestModel, nil, opt, nil, logger)
+local testResults = tester:test(0, testLoader)
+tester.logger.testTop1 = testResults.top1
+tester.logger.testTop5 = testResults.top5
 print(string.format(' * Results top1: %6.3f  top5: %6.3f', testResults.top1, testResults.top5))
