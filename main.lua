@@ -61,10 +61,11 @@ if not opt.testOnly then
 end
 
 -- Testing
-local bestModel = torch.load(opt.modelFilename .. '.best')
+local bestModel, logger = checkpoints.best(opt)
 local tester = Tester(bestModel, opt, logger, 'test')
 local testResults = tester:test(0, testLoader)
-tester.logger.testTop1 = testResults.top1
-tester.logger.testTop5 = testResults.top5
-torch.save(opt.loggerFilename, logger)
+checkpoints.logResults(opt, logger, {
+  testTop1 = testResults.top1,
+  testTop5 = testResults.top5,
+})
 print(string.format(' * Results top1: %6.3f  top5: %6.3f', testResults.top1, testResults.top5))

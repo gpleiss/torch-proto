@@ -26,6 +26,25 @@ function checkpoint.latest(opt)
   return latest, optimState, logger
 end
 
+function checkpoint.best(opt)
+  local bestPath = opt.modelFilename .. '.best'
+  if not paths.filep(bestPath) then
+    return nil
+  end
+
+  print('=> Loading best model ' .. bestPath)
+  local model = torch.load(bestPath)
+  local logger = torch.load(opt.loggerFilename)
+  return model, logger
+end
+
+function checkpoint.logResults(opt, logger, results)
+  for key, val in pairs(results) do
+    logger[key] = val
+  end
+  torch.save(opt.loggerFilename, logger)
+end
+
 function checkpoint.save(epoch, model, optimState, logger, isBestModel, opt)
   local function saveModel(m)
     torch.save(opt.modelFilename, m)
