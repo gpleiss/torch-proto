@@ -1,4 +1,5 @@
 gen/
+results/
 libnccl.so
 model_best.t7
 checkpoints
