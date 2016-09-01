@@ -12,7 +12,8 @@ require 'optim'
 require 'nn'
 local DataLoader = require 'dataloader'
 local models = require 'models/init'
-local Trainer = require 'train'
+require 'train'
+require 'test'
 local opts = require 'opts'
 local checkpoints = require 'checkpoints'
 
@@ -34,16 +35,15 @@ if not opt.testOnly then
   local model, criterion = models.setup(opt, checkpoint)
   -- The trainer handles the training loop and evaluation on validation set
   local trainer = Trainer(model, criterion, opt, optimState, logger)
+  local validator = Tester(model, opt, logger, 'valid')
 
   local startEpoch = checkpoint and checkpoint.epoch + 1 or opt.epochNumber
   local bestTop1 = math.huge
   local bestTop5 = math.huge
   for epoch = startEpoch, opt.nEpochs do
-    -- Train for a single epoch
+    -- Train for a single epoch, run model on validation set
     local trainResults = trainer:train(epoch, trainLoader)
-
-    -- Run model on validation set
-    local valResults = trainer:test(epoch, valLoader)
+    local valResults = validator:test(epoch, valLoader)
 
     local bestModel = false
     if valResults.top1 < bestTop1 then
@@ -62,8 +62,9 @@ end
 
 -- Testing
 local bestModel = torch.load(opt.modelFilename .. '.best')
-local tester = Trainer(bestModel, nil, opt, nil, logger)
+local tester = Tester(bestModel, opt, logger, 'test')
 local testResults = tester:test(0, testLoader)
 tester.logger.testTop1 = testResults.top1
 tester.logger.testTop5 = testResults.top5
+torch.save(opt.loggerFilename, logger)
 print(string.format(' * Results top1: %6.3f  top5: %6.3f', testResults.top1, testResults.top5))
