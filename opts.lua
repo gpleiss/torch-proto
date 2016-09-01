@@ -88,7 +88,10 @@ function M.parse(arg)
 
   -- Filename opts
   assert(paths.dirp(opt.data), 'Invalid data directory')
-  assert(paths.dirp(opt.save), 'Invalid data directory')
+  if not paths.dirp(opt.save) then
+    local res = os.execute('mkdir ' .. opt.save)
+    assert(res, 'Could not open or make save directory ' .. opt.save)
+  end
 
   opt.modelFilename = paths.concat(opt.save, 'model.t7')
   opt.optimFilename = paths.concat(opt.save, 'optimState.t7')
