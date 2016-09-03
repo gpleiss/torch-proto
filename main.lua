@@ -61,11 +61,19 @@ if not opt.testOnly then
 end
 
 -- Testing
+local loader = opt.testOnValid and valLoader or testLoader
 local bestModel, logger = checkpoints.best(opt)
 local tester = Tester(bestModel, opt, logger, 'test')
-local testResults = tester:test(0, testLoader)
-checkpoints.logResults(opt, logger, {
-  testTop1 = testResults.top1,
-  testTop5 = testResults.top5,
-})
-print(string.format(' * Results top1: %6.3f  top5: %6.3f', testResults.top1, testResults.top5))
+local results = tester:test(nil, loader)
+if opt.testOnValid then
+  checkpoints.logResults(opt, logger, {
+    finalValidTop1 = results.top1,
+    finalValidTop5 = results.top5,
+  })
+else
+  checkpoints.logResults(opt, logger, {
+    testTop1 = results.top1,
+    testTop5 = results.top5,
+  })
+end
+print(string.format(' * Results top1: %6.3f  top5: %6.3f', results.top1, results.top5))
