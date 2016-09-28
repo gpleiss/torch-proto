@@ -14,6 +14,7 @@ local DataLoader = require 'dataloader'
 local models = require 'models/init'
 require 'train'
 require 'test'
+require 'OpCounter'
 local opts = require 'opts'
 local checkpoints = require 'checkpoints'
 
@@ -36,6 +37,15 @@ if not opt.testOnly then
   -- The trainer handles the training loop and evaluation on validation set
   local trainer = Trainer(model, criterion, opt, optimState, logger)
   local validator = Tester(model, opt, logger, 'valid')
+
+  -- Log parameters and number of floating point operations
+  local opCounter = OpCounter(model, opt)
+  opCounter:count()
+  checkpoints.logResults(opt, trainer.logger, {
+    nParams = trainer.params:size(1),
+    ops = opCounter:total(),
+    opsByType = opCounter:byType(),
+  })
 
   local startEpoch = checkpoint and checkpoint.epoch + 1 or opt.epochNumber
   local bestTop1 = math.huge
