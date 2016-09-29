@@ -11,7 +11,7 @@
 
 local optim = require 'optim'
 
-require('runner')
+require 'runners.runner'
 local Trainer = torch.class('Trainer', 'Runner')
 
 function Trainer:__init(model, criterion, opt, optimState, logger)
@@ -123,4 +123,3 @@ function Trainer:learningRate(epoch)
   end
   return self.opt.LR * math.pow(0.1, decay)
 end
-

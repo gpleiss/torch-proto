@@ -1,4 +1,4 @@
-require 'runner'
+require 'runners.runner'
 local Tester = torch.class('Tester', 'Runner')
 
 function Tester:__init(model, opt, logger, setName)

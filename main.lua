@@ -12,8 +12,8 @@ local opt, checkpoints, DataLoader = require('setup')()
 
 -- Files for training and testing
 local trainLoader, valLoader, testLoader = DataLoader.create(opt)
-require 'train'
-require 'test'
+require 'runners.train'
+require 'runners.test'
 require 'utils.OpCounter'
 
 if not opt.testOnly then
