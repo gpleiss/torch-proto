@@ -16,16 +16,20 @@ Threads.serialization('threads.sharedserialize')
 local M = {}
 local DataLoader = torch.class('resnet.DataLoader', M)
 
-function DataLoader.create(opt)
-  -- The train and val loader
-  local loaders = {}
-
-  for i, split in ipairs{'train', 'val', 'test'} do
+function DataLoader.create(opt, split)
+  if split then
+    -- Load specific split
     local dataset = datasets.create(opt, split)
-    loaders[i] = M.DataLoader(dataset, opt, split)
+    return M.DataLoader(dataset, opt, split)
+  else
+    -- Load train, val and test
+    local loaders = {}
+    for i, split in ipairs{'train', 'val', 'test'} do
+      local dataset = datasets.create(opt, split)
+      loaders[i] = M.DataLoader(dataset, opt, split)
+    end
+    return table.unpack(loaders)
   end
-
-  return table.unpack(loaders)
 end
 
 function DataLoader:__init(dataset, opt, split)
