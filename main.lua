@@ -6,34 +6,22 @@
 --  LICENSE file in the root directory of this source tree. An additional grant
 --  of patent rights can be found in the PATENTS file in the same directory.
 --
-require 'torch'
-require 'paths'
-require 'optim'
-require 'nn'
-local DataLoader = require 'dataloader'
-local models = require 'models/init'
+
+-- Basic setup
+local opt, checkpoints, DataLoader = require('setup')()
+
+-- Files for training and testing
+local trainLoader, valLoader, testLoader = DataLoader.create(opt)
 require 'train'
 require 'test'
-require 'OpCounter'
-local opts = require 'opts'
-local checkpoints = require 'checkpoints'
-
-torch.setdefaulttensortype('torch.FloatTensor')
-torch.setnumthreads(1)
-
-local opt = opts.parse(arg)
-torch.manualSeed(opt.manualSeed)
-cutorch.manualSeedAll(opt.manualSeed)
-
--- Load previous checkpoint, if it exists
-local checkpoint, optimState, logger = checkpoints.latest(opt)
-
--- Data loading
-local trainLoader, valLoader, testLoader = DataLoader.create(opt)
+require 'utils.OpCounter'
 
 if not opt.testOnly then
   -- Create model
+  local models = require 'models/init'
+  local checkpoint, optimState, logger = checkpoints.latest(opt)
   local model, criterion = models.setup(opt, checkpoint)
+
   -- The trainer handles the training loop and evaluation on validation set
   local trainer = Trainer(model, criterion, opt, optimState, logger)
   local validator = Tester(model, opt, logger, 'valid')
@@ -70,6 +58,7 @@ if not opt.testOnly then
   print(string.format(' * Finished top1: %6.3f  top5: %6.3f', bestTop1, bestTop5))
 end
 
+
 -- Testing
 local loader = opt.testOnValid and valLoader or testLoader
 local bestModel, logger = checkpoints.best(opt)
@@ -87,3 +76,6 @@ else
   })
 end
 print(string.format(' * Results top1: %6.3f  top5: %6.3f', results.top1, results.top5))
+
+
+--
