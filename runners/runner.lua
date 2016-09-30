@@ -1,4 +1,5 @@
-local Runner = torch.class('Runner')
+local M = {}
+local Runner = torch.class('Runner', M)
 
 function Runner:__init()
 end
@@ -41,3 +42,5 @@ function Runner:copyInputs(sample)
   self.input:resize(sample.input:size()):copy(sample.input)
   self.target:resize(sample.target:size()):copy(sample.target)
 end
+
+return M.Runner

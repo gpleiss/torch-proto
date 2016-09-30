@@ -1,5 +1,6 @@
 local multiply_adds = true
-local OpCounter = torch.class('OpCounter')
+local M = {}
+local OpCounter = torch.class('OpCounter', M)
 
 function OpCounter:__init(model, opt)
   self.model = model
@@ -187,3 +188,5 @@ OpCounter.module_handlers = {
   ['nn.Dropout'] = OpCounter.ops_nothing, -- Is turned off in inference
   ['nn.Concat'] = OpCounter.ops_nothing,
 }
+
+return M.OpCounter

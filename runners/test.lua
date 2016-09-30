@@ -1,5 +1,7 @@
-require 'runners.runner'
-local Tester = torch.class('Tester', 'Runner')
+local M = {
+  Runner = require 'runners.runner',
+}
+local Tester = torch.class('Tester', 'Runner', M)
 
 function Tester:__init(model, opt, logger, setName)
   self.model = model
@@ -58,3 +60,5 @@ function Tester:test(epoch, dataloader)
     time = timeSum,
   }
 end
+
+return M.Tester
