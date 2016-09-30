@@ -66,16 +66,25 @@ function M.parse(arg)
     specificOpts.depth = 40
     specificOpts.nEpochs = 300
     specificOpts.batchSize = 64
+    if opt.dataset == 'cifar10' then
+      specificOpts.nClasses = 10
+    elseif opt.dataset == 'cifar100' then
+      specificOpts.nClasses = 100
+    else
+      error('Dataset not supported')
+    end
 
   elseif opt.dataset == 'imagenet' then
     specificOpts.shortcutType = 'B'
     specificOpts.nEpochs = 90
     specificOpts.batchSize = 32
+    specificOpts.nClasses = 1000
 
   elseif opt.dataset == 'cifar10' then
     specificOpts.shortcutType = 'A'
     specificOpts.nEpochs = 164
     specificOpts.batchSize = 256
+    specificOpts.nClasses = 10
 
   else
     cmd:error('unknown dataset: ' .. opt.dataset)

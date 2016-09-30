@@ -63,14 +63,7 @@ local function createModel(opt)
     model:add(cudnn.SpatialBatchNormalization(nChannels))
     model:add(cudnn.ReLU(true))
     model:add(cudnn.SpatialAveragePooling(8,8)):add(nn.Reshape(nChannels))
-    if opt.dataset == 'cifar100' then
-      model:add(nn.Linear(nChannels, 100))
-    elseif opt.dataset == 'cifar10' then
-      model:add(nn.Linear(nChannels, 10))
-    else
-      error("Dataset not supported yet!")
-    end
-
+    model:add(nn.Linear(nChannels, opt.nClasses))
 
     --Initialization following ResNet
     local function ConvInit(name)
