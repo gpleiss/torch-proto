@@ -24,7 +24,7 @@ if not opt.testOnly then
 
   -- The trainer handles the training loop and evaluation on validation set
   local trainer = Trainer(model, criterion, opt, optimState, logger)
-  local validator = Tester(model, opt, logger, 'valid')
+  local validator = Tester(model, opt, trainer.logger, 'valid')
 
   -- Log parameters and number of floating point operations
   local opCounter = OpCounter(model, opt)
