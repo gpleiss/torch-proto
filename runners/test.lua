@@ -1,3 +1,5 @@
+local matio = require 'matio'
+
 local M = {
   Runner = require 'runners.runner',
 }
@@ -8,6 +10,8 @@ function Tester:__init(model, opt, logger, setName)
   self.opt = opt
   self.logger = logger
   self.setName = setName or 'Test'
+
+  self.logits = nn.View(1, -1):setNumInputDims(1):cuda()
 end
 
 function Tester:test(epoch, dataloader)
@@ -20,6 +24,9 @@ function Tester:test(epoch, dataloader)
   local nCrops = self.opt.tenCrop and 10 or 1
   local top1Sum, top5Sum, timeSum = 0.0, 0.0, 0.0
   local N = 0
+  local logitsTable = {}
+  local labelTable = {}
+  local indexTable = {}
 
   self.model:evaluate()
   for n, sample in dataloader:run() do
@@ -27,9 +34,12 @@ function Tester:test(epoch, dataloader)
 
     -- Copy input and target to the GPU
     self:copyInputs(sample)
-
-    local output = self.model:forward(self.input):float()
+    local output = self.model:forward(self.input)
     local batchSize = output:size(1) / nCrops
+    local logits = self.logits:forward(output):float()
+    table.insert(logitsTable, logits)
+    table.insert(labelTable, sample.target)
+    table.insert(indexTable, sample.index)
 
     local top1, top5 = self:computeScore(output, sample.target, nCrops)
     local time = timer:time().real
@@ -53,6 +63,13 @@ function Tester:test(epoch, dataloader)
   else
     print((' Results: top1: %7.3f  top5: %7.3f\n'):format(top1Sum / N, top5Sum / N))
   end
+
+  matio.save(self.opt.scoresFilename, {
+    logits = torch.cat(logitsTable, 1),
+    labels = torch.cat(labelTable, 1),
+    indices = torch.cat(indexTable, 1),
+    ops = self.logger.ops,
+  })
 
   return {
     top1 = top1Sum / N,
