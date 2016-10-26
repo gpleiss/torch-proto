@@ -114,10 +114,12 @@ end
 function Trainer:learningRate(epoch)
   -- Training schedule
   local decay = 0
+  local nEpochs = self.opt.nEpochs
+  local epochRatio = (epoch - 1) / nEpochs
   if self.opt.dataset == 'imagenet' then
-    decay = math.floor((epoch - 1) / 30)
+    decay = math.floor(epochRatio * 3)
   elseif self.opt.dataset == 'cifar10' then
-    decay = epoch >= 122 and 2 or epoch >= 81 and 1 or 0
+    decay = epochRatio >= 0.75 and 2 or epochRatio >= 0.5 and 1 or 0
   end
   return self.opt.LR * math.pow(0.1, decay)
 end
