@@ -159,6 +159,7 @@ OpCounter.module_handlers = {
   ['nn.Identity'] = OpCounter.ops_nothing,
   ['nn.DataParallelTable'] = OpCounter.ops_nothing,
   ['nn.Contiguous'] = OpCounter.ops_nothing,
+  ['nn.CAddTable'] = OpCounter.ops_nothing,
   ['nn.ConcatTable'] = OpCounter.ops_nothing,
   ['nn.JoinTable'] = OpCounter.ops_nothing,
   ['nn.Padding'] = OpCounter.ops_nothing,
