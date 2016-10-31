@@ -126,14 +126,14 @@ local function createModel(opt)
     model:add(Avg(7, 7, 1, 1))
     model:add(nn.View(nFeatures):setNumInputDims(3))
     model:add(nn.Linear(nFeatures, opt.nClasses))
-  elseif opt.dataset == 'cifar10' then
+  elseif string.find(opt.dataset, 'cifar') then
     -- Model type specifies number of layers for CIFAR-10 model
     assert((depth - 2) % 6 == 0, 'depth should be one of 20, 32, 44, 56, 110, 1202')
     local n = (depth - 2) / 6
     iChannels = 16
-    print(' | ResNet-' .. depth .. ' CIFAR-10')
+    print(' | ResNet-' .. depth .. ' CIFAR')
 
-    -- The ResNet CIFAR-10 model
+    -- The ResNet CIFAR model
     model:add(Convolution(3,16,3,3,1,1,1,1))
     model:add(SBatchNorm(16))
     model:add(ReLU(true))

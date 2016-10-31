@@ -19,7 +19,7 @@ function M.parse(arg)
   cmd:option('-data',  os.getenv('DATA_DIR') or '', 'Path to datasets')
   cmd:option('-save',  os.getenv('SAVE_DIR') or '', 'Directory in which to save checkpoints/results')
   ------------- General options --------------------
-  cmd:option('-dataset',   'cifar10', 'Options: imagenet | cifar10')
+  cmd:option('-dataset',   'cifar10', 'Options: imagenet | cifar10 | cifar100')
   cmd:option('-manualSeed', 0,       'Manually set RNG seed')
   cmd:option('-nGPU',     1,       'Number of GPUs to use by default')
   cmd:option('-backend',   'cudnn',   'Options: cudnn | cunn')

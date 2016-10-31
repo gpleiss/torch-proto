@@ -54,8 +54,8 @@ end
 
 function M.exec(opt, cacheFile)
   print("=> Downloading CIFAR-10 dataset from " .. URL)
-  --local ok = os.execute('curl ' .. URL .. ' | tar xz -C /tmp')
-  --assert(ok == true or ok == 0, 'error downloading CIFAR-10')
+  local ok = os.execute('curl ' .. URL .. ' | tar xz -C /tmp')
+  assert(ok == true or ok == 0, 'error downloading CIFAR-10')
 
   print(" | combining dataset into a single file")
   local trainData, valData = convertToTensor({
