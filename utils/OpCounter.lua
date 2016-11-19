@@ -188,6 +188,7 @@ OpCounter.module_handlers = {
   ['nn.Reshape'] = OpCounter.ops_nothing,
   ['nn.Dropout'] = OpCounter.ops_nothing, -- Is turned off in inference
   ['nn.Concat'] = OpCounter.ops_nothing,
+  ['nn.MulConstant'] = OpCounter.ops_nothing,
 }
 
 return M.OpCounter
