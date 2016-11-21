@@ -50,14 +50,8 @@ function DataLoader:__init(dataset, opt, split)
   local threads, sizes = Threads(opt.nThreads, init, main)
   self.nCrops = ((split == 'val' or split == 'test') and opt.tenCrop) and 10 or 1
   self.threads = threads
+  self.__size = sizes[1][1]
   self.batchSize = math.floor(opt.batchSize / self.nCrops)
-
-  local size = (split == 'train') and math.min(sizes[1][1], opt.nTrain) or sizes[1][1]
-  self.sampleIndices = torch.sort(torch.randperm(sizes[1][1]):narrow(1, 1, size))
-  self.__size = size
-  if split == 'train' then
-    print(size)
-  end
 end
 
 function DataLoader:size()
@@ -66,8 +60,8 @@ end
 
 function DataLoader:run()
   local threads = self.threads
-  local size, batchSize = self.sampleIndices:size(1), self.batchSize
-  local perm = self.sampleIndices:index(1, torch.randperm(size):long())
+  local size, batchSize = self.__size, self.batchSize
+  local perm = torch.randperm(size)
 
   local idx, sample = 1, nil
   local function enqueue()
