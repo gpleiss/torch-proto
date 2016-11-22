@@ -87,15 +87,15 @@ function M.parse(arg)
     specificOpts.batchSize = 32
     specificOpts.nClasses = 1000
 
-  elseif opt.dataset == 'cifar10' or opt.dataset == 'cifar100' then
+  elseif opt.dataset == 'cifar10' then
     specificOpts.shortcutType = 'A'
-    specificOpts.nEpochs = 164
+    specificOpts.nEpochs = 300
     specificOpts.batchSize = 256
     specificOpts.nClasses = 10
 
-  elseif opt.dataset == 'cifar10' then
+  elseif opt.dataset == 'cifar100' then
     specificOpts.shortcutType = 'A'
-    specificOpts.nEpochs = 164
+    specificOpts.nEpochs = 300
     specificOpts.batchSize = 256
     specificOpts.nClasses = 100
 
