@@ -92,6 +92,12 @@ function M.parse(arg)
     specificOpts.batchSize = 256
     specificOpts.nClasses = 10
 
+  elseif opt.dataset == 'cifar10' then
+    specificOpts.shortcutType = 'A'
+    specificOpts.nEpochs = 164
+    specificOpts.batchSize = 256
+    specificOpts.nClasses = 100
+
   else
     cmd:error('unknown dataset: ' .. opt.dataset)
   end
