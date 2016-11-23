@@ -3,6 +3,10 @@ local M = {}
 local OpCounter = torch.class('OpCounter', M)
 
 function OpCounter:__init(model, opt)
+  if torch.type(model) == 'nn.DataParallelTable' then
+    model = model:get(1)
+  end
+
   self.model = model
   self.op_count = op_count
   self.op_used = op_used
