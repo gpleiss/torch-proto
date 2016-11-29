@@ -1,5 +1,3 @@
-local matio = require 'matio'
-
 local M = {
   Runner = require 'runners.runner',
 }
@@ -10,8 +8,6 @@ function Tester:__init(model, opt, logger, setName)
   self.opt = opt
   self.logger = logger
   self.setName = setName or 'Test'
-
-  self.logits = nn.View(1, -1):setNumInputDims(1):cuda()
 end
 
 function Tester:test(epoch, dataloader)
@@ -24,6 +20,8 @@ function Tester:test(epoch, dataloader)
   local nCrops = self.opt.tenCrop and 10 or 1
   local top1Sum, top5Sum, timeSum = 0.0, 0.0, 0.0
   local N = 0
+
+  local featuresTable = {}
   local logitsTable = {}
   local labelTable = {}
   local indexTable = {}
@@ -36,8 +34,8 @@ function Tester:test(epoch, dataloader)
     self:copyInputs(sample)
     local output = self.model:forward(self.input)
     local batchSize = output:size(1) / nCrops
-    local logits = self.logits:forward(output):float()
-    table.insert(logitsTable, logits)
+    table.insert(featuresTable, self.model:get(self.model:size() - 1).output:float())
+    table.insert(logitsTable, output:float())
     table.insert(labelTable, sample.target)
     table.insert(indexTable, sample.index)
 
@@ -64,17 +62,15 @@ function Tester:test(epoch, dataloader)
     print((' Results: top1: %7.3f  top5: %7.3f\n'):format(top1Sum / N, top5Sum / N))
   end
 
-  matio.save(self.opt.scoresFilename, {
-    logits = torch.cat(logitsTable, 1),
-    labels = torch.cat(labelTable, 1),
-    indices = torch.cat(indexTable, 1),
-    ops = self.logger.ops,
-  })
-
+  local _, order = torch.cat(indexTable, 1):sort()
   return {
     top1 = top1Sum / N,
     top5 = top5Sum / N,
     time = timeSum,
+    features = torch.cat(featuresTable, 1):index(1, order),
+    logits = torch.cat(logitsTable, 1):index(1, order),
+    labels = torch.cat(labelTable, 1):index(1, order),
+    ops = self.logger.ops,
   }
 end
 

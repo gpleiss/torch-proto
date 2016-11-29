@@ -8,6 +8,7 @@
 --
 
 -- Basic setup
+local matio = require 'matio'
 local opt, checkpoints, DataLoader = require('setup')()
 
 -- Files for training and testing
@@ -63,19 +64,33 @@ end
 local loader = opt.testOnValid and valLoader or testLoader
 local bestModel, logger = checkpoints.best(opt)
 local tester = Tester(bestModel, opt, logger, 'test')
-local results = tester:test(nil, loader)
+
+local trainResults = tester:test(nil, trainLoader)
+matio.save(opt.trainScoresFilename, {
+  features = trainResults.features,
+  logits = trainResults.logits,
+  labels = trainResults.labels
+})
+
+local testResults = tester:test(nil, loader)
+matio.save(opt.testScoresFilename, {
+  features = testResults.features,
+  logits = testResults.logits,
+  labels = testResults.labels
+})
+
 if opt.testOnValid then
   checkpoints.logResults(opt, logger, {
-    finalValidTop1 = results.top1,
-    finalValidTop5 = results.top5,
+    finalValidTop1 = testResults.top1,
+    finalValidTop5 = testResults.top5,
   })
 else
   checkpoints.logResults(opt, logger, {
-    testTop1 = results.top1,
-    testTop5 = results.top5,
+    testTop1 = testResults.top1,
+    testTop5 = testResults.top5,
   })
 end
-print(string.format(' * Results top1: %6.3f  top5: %6.3f', results.top1, results.top5))
+print(string.format(' * Results top1: %6.3f  top5: %6.3f', testResults.top1, testResults.top5))
 
 
 --

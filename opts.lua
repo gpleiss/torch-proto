@@ -129,6 +129,8 @@ function M.parse(arg)
   opt.optimFilename = paths.concat(opt.save, 'optimState.t7')
   opt.loggerFilename = paths.concat(opt.save, 'log.t7')
   opt.latestFilename = paths.concat(opt.save, 'latest.t7')
+  opt.trainScoresFilename = paths.concat(opt.save, 'train-scores.mat')
+  opt.testScoresFilename = paths.concat(opt.save, 'test-scores.mat')
 
   opt.datasetDir = paths.concat(opt.data, opt.dataset)
 
