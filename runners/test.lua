@@ -26,6 +26,13 @@ function Tester:test(epoch, dataloader)
   local labelTable = {}
   local indexTable = {}
 
+  local featureLayer
+  if self.model:size() == 1 then -- Using a data parallel table probably
+    featureLayer = self.model:get(1):get(self.model:get(1):size() - 1)
+  else
+    featureLayer = self.model:get(self.model:size() - 1)
+  end
+
   self.model:evaluate()
   for n, sample in dataloader:run() do
     local dataTime = dataTimer:time().real
@@ -34,7 +41,7 @@ function Tester:test(epoch, dataloader)
     self:copyInputs(sample)
     local output = self.model:forward(self.input)
     local batchSize = output:size(1) / nCrops
-    table.insert(featuresTable, self.model:get(self.model:size() - 1).output:float())
+    table.insert(featuresTable, featureLayer.output:float())
     table.insert(logitsTable, output:float())
     table.insert(labelTable, sample.target)
     table.insert(indexTable, sample.index)
