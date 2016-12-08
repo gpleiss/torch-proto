@@ -26,13 +26,6 @@ function Tester:test(epoch, dataloader)
   local labelTable = {}
   local indexTable = {}
 
-  local featureLayer
-  if self.model:size() == 1 then -- Using a data parallel table probably
-    featureLayer = self.model:get(1):get(self.model:get(1):size() - 1)
-  else
-    featureLayer = self.model:get(self.model:size() - 1)
-  end
-
   self.model:evaluate()
   for n, sample in dataloader:run() do
     local dataTime = dataTimer:time().real
@@ -41,7 +34,9 @@ function Tester:test(epoch, dataloader)
     self:copyInputs(sample)
     local output = self.model:forward(self.input)
     local batchSize = output:size(1) / nCrops
-    table.insert(featuresTable, featureLayer.output:float())
+    if self.opt.nGPU == 1 then
+      table.insert(featuresTable, self.model:get(1):get(self.model:size() - 1).output:float())
+    end
     table.insert(logitsTable, output:float())
     table.insert(labelTable, sample.target)
     table.insert(indexTable, sample.index)
@@ -74,7 +69,7 @@ function Tester:test(epoch, dataloader)
     top1 = top1Sum / N,
     top5 = top5Sum / N,
     time = timeSum,
-    features = torch.cat(featuresTable, 1):index(1, order),
+    features = #featuresTable > 0 and torch.cat(featuresTable, 1):index(1, order) or nil,
     logits = torch.cat(logitsTable, 1):index(1, order),
     labels = torch.cat(labelTable, 1):index(1, order),
     ops = self.logger.ops,
