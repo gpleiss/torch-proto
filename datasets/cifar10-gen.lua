@@ -70,13 +70,15 @@ function M.exec(opt, cacheFile)
   })
 
   print(" | saving CIFAR-10 dataset to " .. cacheFile)
-  torch.save(cacheFile, {
+  local data = {
     train = trainData,
     val = valData,
     test = testData,
-  })
+  }
 
-  --paths.rmall('/tmp/cifar-10-batches-t7', 'yes')
+  torch.save(cacheFile, data)
+  paths.rmall('/tmp/cifar-10-batches-t7', 'yes')
+  return data
 end
 
 return M

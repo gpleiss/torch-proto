@@ -66,11 +66,15 @@ function M.exec(opt, cacheFile)
   }
 
   print(" | saving CIFAR-100 dataset to " .. cacheFile)
-  torch.save(cacheFile, {
+  local data = {
     train = trainData,
     val = valData,
     test = testData,
-  })
+  }
+
+  torch.save(cacheFile, data)
+  paths.rmall('/tmp/cifar-100-binary', 'yes')
+  return data
 end
 
 return M
