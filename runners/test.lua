@@ -35,7 +35,7 @@ function Tester:test(epoch, dataloader)
     local output = self.model:forward(self.input)
     local batchSize = output:size(1) / nCrops
     if self.opt.nGPU == 1 then
-      table.insert(featuresTable, self.model:get(1):get(self.model:size() - 1).output:float())
+      table.insert(featuresTable, self.model:get(self.model:size() - 1).output:float())
     end
     table.insert(logitsTable, output:float())
     table.insert(labelTable, sample.target)
