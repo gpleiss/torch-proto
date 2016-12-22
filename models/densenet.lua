@@ -34,7 +34,7 @@ local function createModel(opt)
       model:add(cudnn.ReLU(true))
       model:add(cudnn.SpatialConvolution(nChannels, nOutChannels, 1, 1, 1, 1, 0, 0))
       if opt.dropRate > 0 then
-        container:add(nn.Dropout(opt.dropRate))
+        model:add(nn.Dropout(opt.dropRate))
       end
       model:add(cudnn.SpatialAveragePooling(2, 2))
     end
