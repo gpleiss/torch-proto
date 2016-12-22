@@ -69,19 +69,7 @@ function M.parse(arg)
   -- Model/dataset specific opts --
   local specificOpts = {}
 
-  if opt.netType == 'densenet' then
-    specificOpts.depth = 40
-    specificOpts.nEpochs = 300
-    specificOpts.batchSize = 64
-    if opt.dataset == 'cifar10' then
-      specificOpts.nClasses = 10
-    elseif opt.dataset == 'cifar100' then
-      specificOpts.nClasses = 100
-    else
-      error('Dataset not supported')
-    end
-
-  elseif opt.dataset == 'imagenet' then
+  if opt.dataset == 'imagenet' then
     specificOpts.shortcutType = 'B'
     specificOpts.nEpochs = 90
     specificOpts.batchSize = 32
@@ -90,14 +78,19 @@ function M.parse(arg)
   elseif opt.dataset == 'cifar10' then
     specificOpts.shortcutType = 'A'
     specificOpts.nEpochs = 300
-    specificOpts.batchSize = 256
+    specificOpts.batchSize = (opt.nettype == 'densenet') and 64 or  256
     specificOpts.nClasses = 10
 
   elseif opt.dataset == 'cifar100' then
     specificOpts.shortcutType = 'A'
     specificOpts.nEpochs = 300
-    specificOpts.batchSize = 256
+    specificOpts.batchSize = (opt.nettype == 'densenet') and 64 or  256
     specificOpts.nClasses = 100
+
+  elseif opt.dataset == 'celeba' then
+    specificOpts.nEpochs = 150
+    specificOpts.batchSize = 256
+    specificOpts.nClasses = opt.attr and 40 or 8000
 
   else
     cmd:error('unknown dataset: ' .. opt.dataset)
