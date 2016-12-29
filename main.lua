@@ -41,7 +41,8 @@ if not opt.testOnly then
   local bestTop5 = math.huge
   for epoch = startEpoch, opt.nEpochs do
     -- Train for a single epoch, run model on validation set
-    local trainResults = trainer:train(epoch, trainLoader)
+    local valMmdLoader = DataLoader.create(opt, 'test')
+    local trainResults = trainer:train(epoch, trainLoader, valMmdLoader)
     local valResults = validator:test(epoch, valLoader)
 
     local bestModel = false
