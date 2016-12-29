@@ -32,7 +32,7 @@ function Tester:test(epoch, dataloader)
 
     -- Copy input and target to the GPU
     self:copyInputs(sample)
-    local output = self.model:forward(self.input)
+    local output = self.model:forward(self.input)[2]
     local batchSize = output:size(1) / nCrops
     if self.opt.nGPU == 1 then
       table.insert(featuresTable, self.model:get(self.model:size() - 1).output:float())

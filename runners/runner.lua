@@ -5,6 +5,12 @@ function Runner:__init()
 end
 
 function Runner:computeScore(output, target, nCrops)
+  local indices = target:nonzero():squeeze()
+  if indices then
+    output = output:index(1, indices)
+    target = target:index(1, indices)
+  end
+
   if nCrops > 1 then
     -- Sum over crops
     output = output:view(output:size(1) / nCrops, nCrops, output:size(2))

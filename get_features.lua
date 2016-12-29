@@ -13,6 +13,8 @@ for i = 1, model:size() do
     table.insert(indices, i)
   end
 end
+table.insert(indices, model:size() - 1)
+table.insert(indices, model:size())
 
 function test()
   local maxNumBatches = math.ceil(3840 / opt.batchSize)
@@ -50,7 +52,11 @@ function test()
       for j = 1, #inputs do
         inputs[j] = model:get(lastIndex):forward(inputs[j]:cuda()):float()
         if lastIndex == index then
-          table.insert(features, model:get(lastIndex):get(2):get(3).output:float())
+          if model:get(lastIndex).modules then
+            table.insert(features, model:get(lastIndex):get(2):get(3).output:float())
+          else
+            table.insert(features, model:get(lastIndex).output:float())
+          end
         end
       end
       model:get(lastIndex):clearState()

@@ -7,6 +7,10 @@ local function createModel(opt)
       error("Depth must be 3N + 4!")
     end
 
+    if (opt.depth - 4) < opt.mmdLayer then
+      error('Invalid mmd layer')
+    end
+
     --#layers in each denseblock
     local N = (opt.depth - 4)/3
 
@@ -14,7 +18,9 @@ local function createModel(opt)
     --set it to be comparable with growth rate
     local nChannels = opt.nInitChannels
 
-    local function addLayer(model, nChannels, nOutChannels)
+    local layerNum = 1
+
+    local function addLayer(modelPreMmd, modelPostMmd, nChannels, nOutChannels)
       concat = nn.Concat(2)
       concat:add(nn.Identity())
 
@@ -26,44 +32,57 @@ local function createModel(opt)
         convFactory:add(nn.Dropout(opt.dropRate))
       end
       concat:add(convFactory)
-      model:add(concat)
-    end
 
-    local function addTransition(model, nChannels, nOutChannels)
-      model:add(cudnn.SpatialBatchNormalization(nChannels))
-      model:add(cudnn.ReLU(true))
-      model:add(cudnn.SpatialConvolution(nChannels, nOutChannels, 1, 1, 1, 1, 0, 0))
-      if opt.dropRate > 0 then
-        model:add(nn.Dropout(opt.dropRate))
+      if layerNum <= opt.mmdLayer then
+        modelPreMmd:add(concat)
+      else
+        modelPostMmd:add(concat)
       end
-      model:add(cudnn.SpatialAveragePooling(2, 2))
+      layerNum = layerNum + 1
     end
 
-    model = nn.Sequential()
+    local function addTransition(modelPreMmd, modelPostMmd, nChannels, nOutChannels)
+      local container = (layerNum <= opt.mmdLayer) and modelPreMmd or modelPostMmd
 
-    model:add(cudnn.SpatialConvolution(3, nChannels, 3,3, 1,1, 1,1))
+      container:add(cudnn.SpatialBatchNormalization(nChannels))
+      container:add(cudnn.ReLU(true))
+      container:add(cudnn.SpatialConvolution(nChannels, nOutChannels, 1, 1, 1, 1, 0, 0))
+      if opt.dropRate > 0 then
+        container:add(nn.Dropout(opt.dropRate))
+      end
+      container:add(cudnn.SpatialAveragePooling(2, 2))
+    end
+
+    local modelPreMmd = nn.Sequential()
+    local modelPostMmd = nn.Sequential()
+
+    modelPreMmd:add(cudnn.SpatialConvolution(3, nChannels, 3,3, 1,1, 1,1))
 
     for i=1, N do
-      addLayer(model, nChannels, opt.growthRate)
+      addLayer(modelPreMmd, modelPostMmd, nChannels, opt.growthRate)
       nChannels = nChannels + opt.growthRate
     end
-    addTransition(model, nChannels, nChannels)
+    addTransition(modelPreMmd, modelPostMmd, nChannels, nChannels)
 
     for i=1, N do
-      addLayer(model, nChannels, opt.growthRate)
+      addLayer(modelPreMmd, modelPostMmd, nChannels, opt.growthRate)
       nChannels = nChannels + opt.growthRate
     end
-    addTransition(model, nChannels, nChannels)
+    addTransition(modelPreMmd, modelPostMmd, nChannels, nChannels)
 
     for i=1, N do
-      addLayer(model, nChannels, opt.growthRate)
+      addLayer(modelPreMmd, modelPostMmd, nChannels, opt.growthRate)
       nChannels = nChannels + opt.growthRate
     end
 
-    model:add(cudnn.SpatialBatchNormalization(nChannels))
-    model:add(cudnn.ReLU(true))
-    model:add(cudnn.SpatialAveragePooling(8,8)):add(nn.Reshape(nChannels))
-    model:add(nn.Linear(nChannels, opt.nClasses))
+    modelPostMmd:add(cudnn.SpatialBatchNormalization(nChannels))
+    modelPostMmd:add(cudnn.ReLU(true))
+    modelPostMmd:add(cudnn.SpatialAveragePooling(8,8)):add(nn.Reshape(nChannels))
+    modelPostMmd:add(nn.Linear(nChannels, opt.nClasses))
+
+    local model1 = - modelPreMmd
+    local model2 = model1 - modelPostMmd
+    local model = nn.gModule({model1}, {model1, model2}):cuda()
 
     --Initialization following ResNet
     local function ConvInit(name)

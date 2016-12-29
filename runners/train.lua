@@ -42,7 +42,7 @@ function Trainer:__init(model, criterion, opt, optimState, logger)
   }
 end
 
-function Trainer:train(epoch, dataloader)
+function Trainer:train(epoch, dataloader, valLoader)
   -- Trains the model for a single epoch
   self.optimState.learningRate = self:learningRate(epoch)
 
@@ -57,16 +57,33 @@ function Trainer:train(epoch, dataloader)
   local top1Sum, top5Sum, lossSum, timeSum = 0.0, 0.0, 0.0, 0.0
   local N = 0
 
+  local valLoaderRun = valLoader:run()
+
   print('=> Training epoch # ' .. epoch)
   -- set the batch norm to training mode
   self.model:training()
   for n, sample in dataloader:run() do
     local dataTime = dataTimer:time().real
 
-    -- Copy input and target to the GPU
-    self:copyInputs(sample)
+    -- Make data that is part validation and part training
+    local _, valSample = valLoaderRun()
+    if not valSample or valSample.input:size(1) < sample.input:size(1) then
+      valLoaderRun = valLoader:run()
+      _, valSample = valLoaderRun()
+    elseif valSample.input:size(1) > sample.input:size(1) then
+      valSample.input = valSample.input:narrow(1, 1, sample.input:size(1))
+      valSample.target = valSample.target:narrow(1, 1, sample.input:size(1))
+    end
 
-    local output = self.model:forward(self.input):float()
+    local comboSample = {
+      input = torch.cat(sample.input, valSample.input, 1),
+      target = torch.cat(sample.target, valSample.target:zero(), 1),
+    }
+
+    -- Copy input and target to the GPU
+    self:copyInputs(comboSample)
+
+    local output = self.model:forward(self.input)[2]:float()
     local batchSize = output:size(1)
     local loss = self.criterion:forward(self.model.output, self.target)
 
@@ -84,8 +101,8 @@ function Trainer:train(epoch, dataloader)
     timeSum = timeSum + time
     N = N + batchSize
 
-    print((' | Epoch: [%d][%d/%d]   Time %.3f  Data %.3f  Err %1.4f  top1 %7.3f  top5 %7.3f'):format(
-      epoch, n, trainSize, time, dataTime, loss, top1, top5))
+    print((' | Epoch: [%d][%d/%d]   Time %.3f  Data %.3f  MMD %1.4f  Err %1.4f  top1 %7.3f  top5 %7.3f'):format(
+      epoch, n, trainSize, time, dataTime, loss[1], loss[2], top1, top5))
 
     -- check that the storage didn't get changed do to an unfortunate getParameters call
     assert(self.params:storage() == self.model:parameters()[1]:storage())

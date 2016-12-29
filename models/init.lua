@@ -89,7 +89,8 @@ function M.setup(opt, checkpoint)
     model = dpt:cuda()
   end
 
-  local criterion = nn.CrossEntropyCriterion():cuda()
+  require 'MmdClsCriterion'
+  local criterion = nn.MmdClsCriterion():cuda()
   return model, criterion
 end
 
