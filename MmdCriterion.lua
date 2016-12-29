@@ -43,12 +43,6 @@ function MmdCriterion:updateOutput(input, label)
   local k4 = self.kernel:forward(sourceInputB, targetInputB)
   local k = k1 + k2 - k3 - k4
 
-  -- K should be PSD, so replace negative values with zero
-  self.negatives = k:lt(0):nonzero():squeeze()
-  if self.negatives:storage() then
-    k:indexFill(1, self.negatives, 0)
-  end
-
   self.output = torch.mean(k)
   return self.output
 end
@@ -77,14 +71,6 @@ function MmdCriterion:updateGradInput(input, label)
   local gradSourceB = (k1GradSourceB - k4GradSourceB) / (numSourceInput)
   local gradTargetA = (k2GradTargetA - k3GradTargetA) / (numTargetInput)
   local gradTargetB = (k2GradTargetB - k4GradTargetB) / (numTargetInput)
-
-  -- K should be PSD, so replace negative values with zero
-  if self.negatives:storage() then
-    gradSourceA:indexFill(1, self.negatives, 0)
-    gradSourceB:indexFill(1, self.negatives, 0)
-    gradTargetA:indexFill(1, self.negatives, 0)
-    gradTargetB:indexFill(1, self.negatives, 0)
-  end
 
   self.gradInput = torch.cat({gradSourceA, gradSourceB, gradTargetA, gradTargetB}, 1)
   return self.gradInput
