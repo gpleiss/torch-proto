@@ -3,7 +3,15 @@ local matio = require 'matio'
 local opt, checkpoints, DataLoader = require('setup')()
 
 local trainLoader, valLoader, testLoader = DataLoader.create(opt)
-local model = checkpoints.best(opt)
+local origModel = checkpoints.best(opt)
+model = nn.Sequential()
+for i, module in ipairs(origModel:get(1).modules) do
+  model:add(origModel:get(1):get(i))
+end
+for i, module in ipairs(origModel:get(2).modules) do
+  model:add(origModel:get(2):get(i))
+end
+print(model)
 model:evaluate()
 
 local indices = {}
