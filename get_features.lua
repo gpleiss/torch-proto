@@ -4,6 +4,7 @@ local opt, checkpoints, DataLoader = require('setup')()
 
 local trainLoader, valLoader, testLoader = DataLoader.create(opt)
 local model = checkpoints.best(opt)
+model:evaluate()
 
 local indices = {}
 for i = 1, model:size() do
