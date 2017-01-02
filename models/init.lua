@@ -26,7 +26,30 @@ function M.setup(opt, checkpoint)
   elseif opt.pretrained then
     assert(paths.filep(opt.pretrained), 'Pretrained model not found: ' .. opt.pretrained)
     print('=> Loading pretrained model from ' .. opt.pretrained)
-    model = torch.load(opt.pretrained)
+    local oldModel = torch.load(opt.pretrained)
+
+    local convNum = 0
+    local preMmd = nn.Sequential()
+    local mmd
+    local postMmd = nn.Sequential()
+    for i, module in ipairs(oldModel.modules) do
+      if torch.type(module) == 'nn.Concat' then
+        convNum = convNum + 1
+      end
+      if convNum < opt.mmdLayer then
+        preMmd:add(module)
+      elseif convNum > opt.mmdLayer then
+        postMmd:add(module)
+      else
+        mmd = module:get(2)
+      end
+    end
+
+    print('=> Adding mmd layer at ' .. opt.mmdLayer)
+    local preMmd = - preMmd
+    local mmd = preMmd - mmd
+    local postMmd = {preMmd, mmd} - nn.JoinTable(1, 3) - postMmd
+    model = nn.gModule({preMmd}, {mmd, postMmd}):cuda()
   else
     print('=> Creating model from file: models/' .. opt.netType .. '.lua')
     model = require('models/' .. opt.netType)(opt)
@@ -52,7 +75,7 @@ function M.setup(opt, checkpoint)
   end
 
   -- For resetting the classifier when fine-tuning on a different Dataset
-  if (opt.resetClassifier or opt.pretrained) and not checkpoint then
+  if (opt.resetClassifier) and not checkpoint then
     print(' => Replacing classifier with ' .. opt.nClasses .. '-way classifier')
 
     local orig = model:get(#model.modules)
