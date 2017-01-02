@@ -48,8 +48,21 @@ function M.setup(opt, checkpoint)
     print('=> Adding mmd layer at ' .. opt.mmdLayer)
     local preMmd = - preMmd
     local mmd = preMmd - mmd
+
+    local setClass = mmd - (nn.Sequential()
+      :add(nn.GradientReversal(0.1))
+      :add(nn.View(-1):setNumInputDims(3))
+      :add(nn.Linear(12*8*8, 100))
+      :add(nn.BatchNormalization(100))
+      :add(nn.ReLU())
+      :add(nn.Linear(100, 100))
+      :add(nn.BatchNormalization(100))
+      :add(nn.ReLU())
+      :add(nn.Linear(100, 1))
+      :add(nn.Sigmoid()))
+
     local postMmd = {preMmd, mmd} - nn.JoinTable(1, 3) - postMmd
-    model = nn.gModule({preMmd}, {mmd, postMmd}):cuda()
+    model = nn.gModule({preMmd}, {setClass, postMmd}):cuda()
   else
     print('=> Creating model from file: models/' .. opt.netType .. '.lua')
     model = require('models/' .. opt.netType)(opt)

@@ -46,6 +46,18 @@ function Trainer:train(epoch, dataloader, valLoader)
   -- Trains the model for a single epoch
   self.optimState.learningRate = self:learningRate(epoch)
 
+  if epoch > 1 then
+    for i, layer in ipairs(self.model:findModules('nn.GradientReversal')) do
+      print(layer)
+      layer:setLambda(epoch / self.opt.nEpochs)
+    end
+  else
+    for i, layer in ipairs(self.model:findModules('nn.GradientReversal')) do
+      print(layer)
+      layer:setLambda(0)
+    end
+  end
+
   local timer = torch.Timer()
   local dataTimer = torch.Timer()
 

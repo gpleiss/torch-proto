@@ -193,6 +193,8 @@ OpCounter.module_handlers = {
   ['nn.Dropout'] = OpCounter.ops_nothing, -- Is turned off in inference
   ['nn.Concat'] = OpCounter.ops_nothing,
   ['nn.MulConstant'] = OpCounter.ops_nothing,
+  ['nn.Sigmoid'] = OpCounter.ops_nothing,
+  ['nn.GradientReversal'] = OpCounter.ops_nothing,
+  ['nn.BatchNormalization'] = OpCounter.ops_nothing,
 }
-
 return M.OpCounter
