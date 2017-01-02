@@ -52,6 +52,7 @@ function M.parse(arg)
   cmd:option('-shareGradInput',  'false', 'Share gradInput tensors to reduce memory usage')
   cmd:option('-optnet',          'false', 'Use optnet to reduce memory usage')
   cmd:option('-resetClassifier', 'false', 'Reset the fully connected layer for fine-tuning')
+  cmd:option('-pretrained', 'none', 'Pretrained')
   cmd:option('-nClasses',      0,    'Number of classes in the dataset')
   cmd:text()
 
@@ -61,6 +62,7 @@ function M.parse(arg)
   opt.shareGradInput = opt.shareGradInput ~= 'false'
   opt.optnet = opt.optnet ~= 'false'
   opt.resetClassifier = opt.resetClassifier ~= 'false'
+  opt.pretrained = (opt.pretrained ~= 'none') and opt.pretrained
 
   if opt.shareGradInput and opt.optnet then
     cmd:error('error: cannot use both -shareGradInput and -optnet')
@@ -117,6 +119,8 @@ function M.parse(arg)
     local res = os.execute('mkdir ' .. opt.save)
     assert(res, 'Could not open or make save directory ' .. opt.save)
   end
+
+  opt.pretrained = opt.pretrained ~= 'none' and opt.pretrained
 
   opt.modelFilename = paths.concat(opt.save, 'model.t7')
   opt.optimFilename = paths.concat(opt.save, 'optimState.t7')

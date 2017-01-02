@@ -23,6 +23,10 @@ function M.setup(opt, checkpoint)
     assert(paths.filep(modelPath), 'Saved model not found: ' .. modelPath)
     print('=> Resuming model from ' .. modelPath)
     model = torch.load(modelPath)
+  elseif opt.pretrained then
+    assert(paths.filep(opt.pretrained), 'Pretrained model not found: ' .. opt.pretrained)
+    print('=> Loading pretrained model from ' .. opt.pretrained)
+    model = torch.load(opt.pretrained)
   else
     print('=> Creating model from file: models/' .. opt.netType .. '.lua')
     model = require('models/' .. opt.netType)(opt)
@@ -48,7 +52,7 @@ function M.setup(opt, checkpoint)
   end
 
   -- For resetting the classifier when fine-tuning on a different Dataset
-  if opt.resetClassifier and not checkpoint then
+  if (opt.resetClassifier or opt.pretrained) and not checkpoint then
     print(' => Replacing classifier with ' .. opt.nClasses .. '-way classifier')
 
     local orig = model:get(#model.modules)
