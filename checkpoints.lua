@@ -27,7 +27,7 @@ function checkpoint.latest(opt)
 end
 
 function checkpoint.best(opt)
-  local bestPath = opt.modelFilename .. '.best'
+  local bestPath = opt.modelFilename
   if not paths.filep(bestPath) then
     return nil
   end

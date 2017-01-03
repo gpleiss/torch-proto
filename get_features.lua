@@ -8,10 +8,14 @@ model = nn.Sequential()
 for i, module in ipairs(origModel:get(1).modules) do
   model:add(origModel:get(1):get(i))
 end
-for i, module in ipairs(origModel:get(2).modules) do
-  model:add(origModel:get(2):get(i))
+model:add(nn.Concat(2)
+  :add(nn.Identity())
+  :add(origModel:get(2))
+)
+for i, module in ipairs(origModel:get(5).modules) do
+  model:add(origModel:get(5):get(i))
 end
-print(model)
+model = model:cuda()
 model:evaluate()
 
 local indices = {}
