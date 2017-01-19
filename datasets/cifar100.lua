@@ -22,6 +22,7 @@ function CifarDataset:__init(imageInfo, opt, split)
   assert(imageInfo[split], split)
   self.imageInfo = imageInfo[split]
   self.split = split
+  self.aug = not opt.noAug
 end
 
 function CifarDataset:get(i)
@@ -52,13 +53,13 @@ local meanstd = {
 }
 
 function CifarDataset:preprocess()
-  if self.split == 'train' then
+  if self.split == 'train' and self.aug then
     return t.Compose{
       t.ColorNormalize(meanstd),
       t.HorizontalFlip(0.5),
       t.RandomCrop(32, 4),
     }
-  elseif self.split == 'val' or self.split == 'test' then
+  elseif self.split == 'val' or self.split == 'test' or not self.aug then
     return t.ColorNormalize(meanstd)
   else
     error('invalid split: ' .. self.split)

@@ -34,6 +34,7 @@ function M.parse(arg)
   cmd:option('-testOnly',      false, 'Run testing only')
   cmd:option('-testOnValid',   false, 'Do final test on validation (rather than test) set')
   cmd:option('-tenCrop',      'false', 'Ten-crop testing')
+  cmd:option('-noAug', false, 'No data augmentation')
   ------------- Checkpointing options ---------------
   cmd:option('-resume',       false,  'Resume from the latest checkpoint in this directory')
   ---------- Optimization options ----------------------

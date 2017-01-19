@@ -21,6 +21,7 @@ function ImagenetDataset:__init(imageInfo, opt, split)
   self.imageInfo = imageInfo[split]
   self.opt = opt
   self.split = split
+  self.aug = not opt.noAug
   self.dir = split == 'test' and paths.concat(opt.datasetDir, 'val') or paths.concat(opt.datasetDir, split)
   assert(paths.dirp(self.dir), 'directory does not exist: ' .. self.dir)
 end
@@ -78,7 +79,7 @@ local pca = {
 }
 
 function ImagenetDataset:preprocess()
-  if self.split == 'train' then
+  if self.split == 'train' and self.aug then
     return t.Compose{
       t.RandomSizedCrop(224),
       t.ColorJitter({
@@ -90,7 +91,7 @@ function ImagenetDataset:preprocess()
       t.ColorNormalize(meanstd),
       t.HorizontalFlip(0.5),
     }
-  elseif self.split == 'val' or self.split == 'test' then
+  elseif self.split == 'val' or self.split == 'test' or not self.aug then
     local Crop = self.opt.tenCrop and t.TenCrop or t.CenterCrop
     return t.Compose{
       t.Scale(256),
