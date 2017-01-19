@@ -72,19 +72,19 @@ function ReconDataset:preprocess()
     return t.Compose{
       t.RandomSizedCrop(224),
       t.ColorJitter({
-        brightness = 0.4,
-        contrast = 0.4,
-        saturation = 0.4,
+        brightness = 0.2,
+        contrast = 0.2,
+        saturation = 0.2,
       }),
       t.Lighting(0.1, pca.eigval, pca.eigvec),
-      t.ColorNormalize(meanstd),
+      t.CaffeColorNormalize(meanstd),
       t.HorizontalFlip(0.5),
     }
   elseif self.split == 'val' or self.split == 'test' then
     local Crop = self.opt.tenCrop and t.TenCrop or t.CenterCrop
     return t.Compose{
       t.Scale(256),
-      t.ColorNormalize(meanstd),
+      t.CaffeColorNormalize(meanstd),
       Crop(224),
     }
   else
