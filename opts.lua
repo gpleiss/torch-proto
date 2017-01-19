@@ -18,6 +18,7 @@ function M.parse(arg)
   ------------- File options --------------------
   cmd:option('-data',  os.getenv('DATA_DIR') or '', 'Path to datasets')
   cmd:option('-save',  os.getenv('SAVE_DIR') or '', 'Directory in which to save checkpoints/results')
+  cmd:option('-lossModel', '', 'Directory in which loss model is stored')
   ------------- General options --------------------
   cmd:option('-dataset',   'cifar10', 'Options: imagenet | cifar10 | cifar100')
   cmd:option('-manualSeed', 0,       'Manually set RNG seed')
@@ -40,6 +41,7 @@ function M.parse(arg)
   cmd:option('-LR',          0.1,  'initial learning rate')
   cmd:option('-momentum',      0.9,  'momentum')
   cmd:option('-weightDecay',    1e-4,  'weight decay')
+  cmd:option('-tvLambda',    1e-6,  'total variation loss')
   ---------- Model options ----------------------------------
   cmd:option('-netType',    'resnet', 'Options: resnet | preresnet')
   cmd:option('-depth',      0,     'ResNet depth: 18 | 34 | 50 | 101 | ...', 'number')
@@ -94,6 +96,11 @@ function M.parse(arg)
     specificOpts.batchSize = 256
     specificOpts.nClasses = opt.attr and 40 or 8000
 
+  elseif opt.dataset == 'recon' then
+    opt.netType = 'VggRecon'
+    specificOpts.nEpochs = 100
+    specificOpts.batchSize = 32
+
   else
     cmd:error('unknown dataset: ' .. opt.dataset)
   end
@@ -119,6 +126,7 @@ function M.parse(arg)
     local res = os.execute('mkdir ' .. opt.save)
     assert(res, 'Could not open or make save directory ' .. opt.save)
   end
+  assert(paths.dirp(opt.lossModel), 'Invalid loss model directory')
 
   opt.pretrained = opt.pretrained ~= 'none' and opt.pretrained
 

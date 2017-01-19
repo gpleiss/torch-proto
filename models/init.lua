@@ -93,8 +93,11 @@ function M.setup(opt, checkpoint)
     model = dpt:cuda()
   end
 
-  local criterion = nn.CrossEntropyCriterion():cuda()
-  return model, criterion
+  require 'VggFeatures'
+  require 'criterion/NetworkCriterion'
+  local vggFeatures = nn.VggFeatures(opt):cuda()
+  local criterion = nn.NetworkCriterion(vggFeatures):cuda()
+  return model, criterion, vggFeatures
 end
 
 function M.shareGradInput(model)

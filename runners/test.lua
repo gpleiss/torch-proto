@@ -3,76 +3,66 @@ local M = {
 }
 local Tester = torch.class('Tester', 'Runner', M)
 
-function Tester:__init(model, opt, logger, setName)
+function Tester:__init(model, criterion, vggFeatures, opt, logger, setName)
   self.model = model
+  self.criterion = criterion
+  self.vggFeatures = vggFeatures
   self.opt = opt
   self.logger = logger
   self.setName = setName or 'Test'
 end
 
 function Tester:test(epoch, dataloader)
-  -- Computes the top-1 and top-5 err on the validation set
+  local outdir = paths.concat(self.opt.datasetDir, 'results', '' .. (epoch or 'final'))
+  if not paths.dirp(outdir) then
+    local res = os.execute('mkdir -p ' .. outdir)
+    assert(res, 'Could not open or make save directory ' .. outdir)
+  end
 
   local timer = torch.Timer()
   local dataTimer = torch.Timer()
   local size = dataloader:size()
 
   local nCrops = self.opt.tenCrop and 10 or 1
-  local top1Sum, top5Sum, timeSum = 0.0, 0.0, 0.0
+  local lossSum, timeSum = 0.0, 0.0
   local N = 0
-
-  local featuresTable = {}
-  local logitsTable = {}
-  local labelTable = {}
-  local indexTable = {}
 
   self.model:evaluate()
   for n, sample in dataloader:run() do
     local dataTime = dataTimer:time().real
 
     -- Copy input and target to the GPU
+    local features = {}
     self:copyInputs(sample)
-    local output = self.model:forward(self.input)
-    local batchSize = output:size(1) / nCrops
-    if self.opt.nGPU == 1 then
-      table.insert(featuresTable, self.model:get(self.model:size() - 1).output:float())
+    self.vggFeatures:forward(self.input)
+    for i, v in ipairs(self.vggFeatures.output) do
+      table.insert(features, v:clone())
     end
-    table.insert(logitsTable, output:float())
-    table.insert(labelTable, sample.target)
-    table.insert(indexTable, sample.index)
+    local output = self.model:forward(features):float()
+    local batchSize = output:size(1) / nCrops
+    local loss = self.criterion:forward(output, features)
 
-    local top1, top5 = self:computeScore(output, sample.target, nCrops)
     local time = timer:time().real
-    top1Sum = top1Sum + top1*batchSize
-    top5Sum = top5Sum + top5*batchSize
+    lossSum = lossSum + loss*batchSize
     timeSum = timeSum + time
     N = N + batchSize
 
     local epochString = epoch and ('[' .. epoch .. ']') or ''
-    print((' | %s: %s[%d/%d]   Time %.3f  Data %.3f  top1 %7.3f (%7.3f)  top5 %7.3f (%7.3f)'):format(
-      self.setName, epochString, n, size, time, dataTime, top1, top1Sum / N, top5, top5Sum / N))
+    print((' | %s: %s[%d/%d]   Time %.3f  Data %.3f  Err %.3f'):format(
+      self.setName, epochString, n, size, time, dataTime, loss))
+
+    for i = 1, #sample.path do
+      image.save(paths.concat(outdir, sample.path[i]), output[i])
+    end
 
     timer:reset()
     dataTimer:reset()
   end
   self.model:training()
 
-  if epoch then
-    print((' * Finished epoch # %d    top1: %7.3f  top5: %7.3f\n'):format(
-      epoch, top1Sum / N, top5Sum / N))
-  else
-    print((' Results: top1: %7.3f  top5: %7.3f\n'):format(top1Sum / N, top5Sum / N))
-  end
-
-  local _, order = torch.cat(indexTable, 1):sort()
   return {
-    top1 = top1Sum / N,
-    top5 = top5Sum / N,
     time = timeSum,
-    features = #featuresTable > 0 and torch.cat(featuresTable, 1):index(1, order) or nil,
-    logits = torch.cat(logitsTable, 1):index(1, order),
-    labels = torch.cat(labelTable, 1):index(1, order),
-    ops = self.logger.ops,
+    loss = lossSum / N,
   }
 end
 

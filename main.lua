@@ -17,39 +17,47 @@ local Trainer = require 'runners.train'
 local Tester = require 'runners.test'
 local OpCounter = require 'utils.OpCounter'
 
+--local display = require 'display'
+--display.configure({port=8882})
+--require 'image'
+--local _, trainSample = trainLoader:run()()
+--print(trainSample)
+--display.image(image.toDisplayTensor({input=trainSample.input, nRow=6, padding=3}))
+--local _, valSample = valLoader:run()()
+--display.image(image.toDisplayTensor({input=valSample.input, nRow=6, padding=3}))
+--error()
+
 if not opt.testOnly then
   -- Create model
   local models = require 'models/init'
   local checkpoint, optimState, logger = checkpoints.latest(opt)
-  local model, criterion = models.setup(opt, checkpoint)
+  local model, criterion, vggFeatures = models.setup(opt, checkpoint)
 
   -- The trainer handles the training loop and evaluation on validation set
-  local trainer = Trainer(model, criterion, opt, optimState, logger)
-  local validator = Tester(model, opt, trainer.logger, 'valid')
+  local trainer = Trainer(model, criterion, vggFeatures, opt, optimState, logger)
+  local validator = Tester(model, criterion, vggFeatures, opt, trainer.logger, 'valid')
 
   -- Log parameters and number of floating point operations
-  local opCounter = OpCounter(model, opt)
-  opCounter:count()
+  --local opCounter = OpCounter(model, opt)
+  --opCounter:count()
   checkpoints.logResults(opt, trainer.logger, {
     nParams = trainer.params:size(1),
-    ops = opCounter:total(),
-    opsByType = opCounter:byType(),
+    --ops = opCounter:total(),
+    --opsByType = opCounter:byType(),
   })
 
   local startEpoch = checkpoint and checkpoint.epoch + 1 or opt.epochNumber
-  local bestTop1 = math.huge
-  local bestTop5 = math.huge
+  local bestLoss = math.huge
   for epoch = startEpoch, opt.nEpochs do
     -- Train for a single epoch, run model on validation set
     local trainResults = trainer:train(epoch, trainLoader)
     local valResults = validator:test(epoch, valLoader)
 
     local bestModel = false
-    if valResults.top1 < bestTop1 then
+    if valResults.loss < bestLoss then
       bestModel = true
-      bestTop1 = valResults.top1
-      bestTop5 = valResults.top5
-      print(' * Best model ', valResults.top1, valResults.top5)
+      bestLoss = valResults.loss
+      print(' * Best model ', valResults.loss)
     end
 
     trainer:log(trainResults, valResults)
@@ -63,7 +71,7 @@ end
 -- Testing
 local loader = opt.testOnValid and valLoader or testLoader
 local bestModel, logger = checkpoints.best(opt)
-local tester = Tester(bestModel, opt, logger, 'test')
+local tester = Tester(bestModel, criterion, opt, logger, 'test')
 
 local trainResults = tester:test(nil, trainLoader)
 matio.save(opt.trainScoresFilename, {

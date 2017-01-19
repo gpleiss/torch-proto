@@ -10,15 +10,18 @@
 --
 
 local optim = require 'optim'
+require 'TVCriterion'
 
 local M = {
   Runner = require 'runners.runner',
 }
 local Trainer = torch.class('Trainer', 'Runner', M)
 
-function Trainer:__init(model, criterion, opt, optimState, logger)
+function Trainer:__init(model, criterion, vggFeatures, opt, optimState, logger)
   self.model = model
   self.criterion = criterion
+  self.tvCriterion = nn.TVCriterion():cuda()
+  self.vggFeatures = vggFeatures
   self.optimState = optimState or {
     learningRate = opt.LR,
     learningRateDecay = 0.0,
@@ -32,12 +35,10 @@ function Trainer:__init(model, criterion, opt, optimState, logger)
 
   self.logger = logger or {
     iterations = {},
-    trainTop1 = {},
-    trainTop5 = {},
     trainLoss = {},
+    trainTv = {},
     trainTime = {},
-    valTop1 = {},
-    valTop5 = {},
+    valLoss = {},
     valTime = {},
   }
 end
@@ -54,7 +55,7 @@ function Trainer:train(epoch, dataloader)
   end
 
   local trainSize = dataloader:size()
-  local top1Sum, top5Sum, lossSum, timeSum = 0.0, 0.0, 0.0, 0.0
+  local tvSum, lossSum, timeSum = 0.0, 0.0, 0.0
   local N = 0
 
   print('=> Training epoch # ' .. epoch)
@@ -66,26 +67,36 @@ function Trainer:train(epoch, dataloader)
     -- Copy input and target to the GPU
     self:copyInputs(sample)
 
-    local output = self.model:forward(self.input):float()
+    local features = {}
+    self.vggFeatures:forward(self.input)
+    for i, v in ipairs(self.vggFeatures.output) do
+      table.insert(features, v:clone())
+    end
+    local output = self.model:forward(features):float()
     local batchSize = output:size(1)
-    local loss = self.criterion:forward(self.model.output, self.target)
 
+    local loss = self.criterion:forward(self.model.output, features)
+    local tv = self.tvCriterion:forward(self.model.output) * self.opt.tvLambda
     self.model:zeroGradParameters()
-    self.criterion:backward(self.model.output, self.target)
-    self.model:backward(self.input, self.criterion.gradInput)
+    self.criterion:backward(self.model.output, features)
+    self.criterion.gradInput:add(self.opt.tvLambda, self.tvCriterion:backward(self.model.output))
+
+
+    self.model:backward(features, self.criterion.gradInput)
 
     optim.sgd(feval, self.params, self.optimState)
 
-    local top1, top5 = self:computeScore(output, sample.target, 1)
+    --local top1, top5 = self:computeScore(output, sample.target, 1)
     local time = timer:time().real
-    top1Sum = top1Sum + top1*batchSize
-    top5Sum = top5Sum + top5*batchSize
+    --top1Sum = top1Sum + top1*batchSize
+    --top5Sum = top5Sum + top5*batchSize
     lossSum = lossSum + loss*batchSize
+    tvSum = tvSum + tv*batchSize
     timeSum = timeSum + time
     N = N + batchSize
 
-    print((' | Epoch: [%d][%d/%d]   Time %.3f  Data %.3f  Err %1.4f  top1 %7.3f  top5 %7.3f'):format(
-      epoch, n, trainSize, time, dataTime, loss, top1, top5))
+    print((' | Epoch: [%d][%d/%d]   Time %.3f  Data %.3f  Err %1.4f  TV %1.4f'):format(
+      epoch, n, trainSize, time, dataTime, loss, tv))
 
     -- check that the storage didn't get changed do to an unfortunate getParameters call
     assert(self.params:storage() == self.model:parameters()[1]:storage())
@@ -95,21 +106,24 @@ function Trainer:train(epoch, dataloader)
   end
 
   return {
-    top1 = top1Sum / N,
-    top5 = top5Sum / N,
+    --top1 = top1Sum / N,
+    --top5 = top5Sum / N,
     loss = lossSum / N,
+    tv = tvSum / N,
     time = timeSum,
   }
 end
 
 function Trainer:log(trainResults, valResults)
   table.insert(self.logger.iterations, self.optimState.evalCounter)
-  table.insert(self.logger.trainTop1, trainResults.top1)
-  table.insert(self.logger.trainTop5, trainResults.top5)
+  --table.insert(self.logger.trainTop1, trainResults.top1)
+  --table.insert(self.logger.trainTop5, trainResults.top5)
   table.insert(self.logger.trainLoss, trainResults.loss)
+  table.insert(self.logger.trainTv, trainResults.tv)
   table.insert(self.logger.trainTime, trainResults.time)
-  table.insert(self.logger.valTop1, valResults.top1)
-  table.insert(self.logger.valTop5, valResults.top5)
+  --table.insert(self.logger.valTop1, valResults.top1)
+  --table.insert(self.logger.valTop5, valResults.top5)
+  table.insert(self.logger.valLoss, valResults.loss)
   table.insert(self.logger.valTime, valResults.time)
 end
 
