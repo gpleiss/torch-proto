@@ -13,7 +13,7 @@ function Tester:__init(model, criterion, vggFeatures, opt, logger, setName)
 end
 
 function Tester:test(epoch, dataloader)
-  local outdir = paths.concat(self.opt.datasetDir, 'results', '' .. (epoch or 'final'))
+  local outdir = paths.concat(self.opt.save, 'imgs', '' .. (epoch or 'final'))
   if not paths.dirp(outdir) then
     local res = os.execute('mkdir -p ' .. outdir)
     assert(res, 'Could not open or make save directory ' .. outdir)
