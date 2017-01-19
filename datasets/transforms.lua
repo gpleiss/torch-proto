@@ -33,6 +33,17 @@ function M.ColorNormalize(meanstd)
   end
 end
 
+function M.CaffeColorNormalize(meanstd)
+  return function(img)
+    img = img:clone()
+    for i=1,3 do
+      img[i]:mul(256)
+      img[i]:add(-meanstd.mean[i] * 256)
+    end
+    return img
+  end
+end
+
 -- Scales the smaller edge to size
 function M.Scale(size, interpolation)
   interpolation = interpolation or 'bicubic'
