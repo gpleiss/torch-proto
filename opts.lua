@@ -37,6 +37,7 @@ function M.parse(arg)
   cmd:option('-noAug', false, 'No data augmentation')
   ------------- Checkpointing options ---------------
   cmd:option('-resume',       false,  'Resume from the latest checkpoint in this directory')
+  cmd:option('-saveScoresEveryEpoch', false, 'Save val scores every epoch')
   ---------- Optimization options ----------------------
   cmd:option('-LR',          0.1,  'initial learning rate')
   cmd:option('-momentum',      0.9,  'momentum')

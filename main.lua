@@ -54,6 +54,14 @@ if not opt.testOnly then
 
     trainer:log(trainResults, valResults)
     checkpoints.save(epoch, model, trainer.optimState, trainer.logger, bestModel, opt)
+
+    if opt.saveScoresEveryEpoch then
+      matio.save(opt.testScoresFilename .. '.epoch' .. epoch, {
+        features = valResults.features,
+        logits = valResults.logits,
+        labels = valResults.labels
+      })
+    end
   end
 
   print(string.format(' * Finished top1: %6.3f  top5: %6.3f', bestTop1, bestTop5))
