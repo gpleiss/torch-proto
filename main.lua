@@ -73,13 +73,6 @@ local loader = opt.testOnValid and valLoader or testLoader
 local bestModel, logger = checkpoints.best(opt)
 local tester = Tester(bestModel, opt, logger, 'test')
 
-local trainResults = tester:test(nil, trainLoader)
-matio.save(opt.trainScoresFilename, {
-  features = trainResults.features,
-  logits = trainResults.logits,
-  labels = trainResults.labels
-})
-
 local testResults = tester:test(nil, loader)
 matio.save(opt.testScoresFilename, {
   features = testResults.features,
