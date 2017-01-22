@@ -45,6 +45,7 @@ function M.parse(arg)
   ---------- Model options ----------------------------------
   cmd:option('-netType',    'resnet', 'Options: resnet | preresnet')
   cmd:option('-depth',      0,     'ResNet depth: 18 | 34 | 50 | 101 | ...', 'number')
+  cmd:option('-width',      1,     'Wide-ResNet width: 1 | 2 | 4', 'number')
   cmd:option('-shortcutType', '',     'Options: A | B | C')
   cmd:option('-transitionType', 'full',     'Options: dense | partial')
   cmd:option('-growthRate', 12,  'How many filters to add each layer')
