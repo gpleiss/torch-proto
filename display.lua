@@ -22,3 +22,5 @@ display.image(image.toDisplayTensor({input=valSample.input, nrow=6}), {title='Va
 display.image(image.toDisplayTensor({input=testSample.input, nrow=6}), {title='Test Set'})
 
 print('Displaying images at http://0.0.0.0:' .. port)
+local size = trainSample.input:size()
+print(string.format('Image size: %dx%dx%d', size[2], size[3], size[4]))
