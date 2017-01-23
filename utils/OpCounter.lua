@@ -157,6 +157,7 @@ end
 OpCounter.module_handlers = {
   -- Containers
   ['nn.Sequential'] = OpCounter.ops_nothing,
+  ['nn.StochasticSequential'] = OpCounter.ops_nothing,
   ['nn.Parallel'] = OpCounter.ops_nothing,
   ['nn.Concat'] = OpCounter.ops_nothing,
   ['nn.gModule'] = OpCounter.ops_nothing,

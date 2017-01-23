@@ -11,6 +11,8 @@
 
 local nn = require 'nn'
 require 'cunn'
+require 'cudnn'
+require 'StochasticSequential'
 
 local Convolution = cudnn.SpatialConvolution
 local Avg = cudnn.SpatialAveragePooling
@@ -50,7 +52,7 @@ local function createModel(opt)
     local nInputPlane = iChannels
     iChannels = n
 
-    local s = nn.Sequential()
+    local s = (opt.stochasticDepth > 0) and nn.StochasticSequential() or nn.Sequential()
     s:add(Convolution(nInputPlane,n,3,3,stride,stride,1,1))
     s:add(SBatchNorm(n))
     s:add(ReLU(true))
@@ -180,6 +182,15 @@ local function createModel(opt)
     model:apply(function(m)
       if m.setMode then m:setMode(1,1,1) end
     end)
+  end
+
+  -- Apply stochastic depth
+  if opt.stochasticDepth > 0 then
+    local stochasticModules = model:findModules('nn.StochasticSequential')
+    for i, module in ipairs(stochasticModules) do
+      module.p = (i / #stochasticModules) * opt.stochasticDepth
+      print(module.p)
+    end
   end
 
   model:get(1).gradInput = nil

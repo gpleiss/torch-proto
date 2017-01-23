@@ -51,6 +51,7 @@ function M.parse(arg)
   cmd:option('-growthRate', 12,  'How many filters to add each layer')
   cmd:option('-nInitChannels', 16,  'Number of channels to start with initially')
   cmd:option('-dropRate', 0,     'Dropout rate')
+  cmd:option('-stochasticDepth', 0,     'Stochastic depth rate (resnet only, linear decay)')
   ---------- Model options ----------------------------------
   cmd:option('-shareGradInput',  false, 'Share gradInput tensors to reduce memory usage')
   cmd:option('-optnet',          false, 'Use optnet to reduce memory usage')
