@@ -57,7 +57,6 @@ if not opt.testOnly then
 
     if opt.saveScoresEveryEpoch then
       matio.save(opt.testScoresFilename .. '.epoch' .. epoch, {
-        features = valResults.features,
         logits = valResults.logits,
         labels = valResults.labels
       })
