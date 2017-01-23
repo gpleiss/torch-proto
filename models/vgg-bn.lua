@@ -35,6 +35,9 @@ local function createModel(opt)
       end
       s:add(cudnn.SpatialBatchNormalization(n))
       s:add(ReLU(true))
+      if opt.dropRate > 0 then
+        s:add(nn.Dropout(opt.dropRate))
+      end
 
       return s
    end
