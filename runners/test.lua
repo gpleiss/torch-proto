@@ -51,6 +51,9 @@ function Tester:test(epoch, dataloader)
     print((' | %s: %s[%d/%d]   Time %.3f  Data %.3f  Err %.3f'):format(
       self.setName, epochString, n, size, time, dataTime, loss))
 
+    output:select(2, 1):add(0.485 * 256):div(256)
+    output:select(2, 2):add(0.456 * 256):div(256)
+    output:select(2, 3):add(0.406 * 256):div(256)
     for i = 1, #sample.path do
       image.save(paths.concat(outdir, sample.path[i]), output[i])
     end
