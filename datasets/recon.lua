@@ -43,7 +43,7 @@ function ReconDataset:_loadImage(path)
   end)
 
   if not ok then
-    input = torch.FloatTensor(3, 224, 224):zero()
+    input = torch.FloatTensor(3, 448, 448):zero()
   end
 
   return input
@@ -70,7 +70,7 @@ local pca = {
 function ReconDataset:preprocess()
   if self.split == 'train' then
     return t.Compose{
-      t.RandomSizedCrop(224),
+      t.RandomSizedCrop(448),
       t.ColorJitter({
         brightness = 0.2,
         contrast = 0.2,
@@ -83,9 +83,9 @@ function ReconDataset:preprocess()
   elseif self.split == 'val' or self.split == 'test' then
     local Crop = self.opt.tenCrop and t.TenCrop or t.CenterCrop
     return t.Compose{
-      t.Scale(256),
+      t.Scale(512),
       t.CaffeColorNormalize(meanstd),
-      Crop(224),
+      Crop(448),
     }
   else
     error('invalid split: ' .. self.split)
