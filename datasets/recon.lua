@@ -70,12 +70,12 @@ local pca = {
 function ReconDataset:preprocess()
   if self.split == 'train' then
     return t.Compose{
-      t.RandomSizedCrop(448),
-      t.ColorJitter({
-        brightness = 0.2,
-        contrast = 0.2,
-        saturation = 0.2,
-      }),
+      t.RandomSizedCrop(704),
+      --t.ColorJitter({
+        --brightness = 0.2,
+        --contrast = 0.2,
+        --saturation = 0.2,
+      --}),
       t.Lighting(0.1, pca.eigval, pca.eigvec),
       t.CaffeColorNormalize(meanstd),
       t.HorizontalFlip(0.5),
@@ -83,9 +83,9 @@ function ReconDataset:preprocess()
   elseif self.split == 'val' or self.split == 'test' then
     local Crop = self.opt.tenCrop and t.TenCrop or t.CenterCrop
     return t.Compose{
-      t.Scale(512),
+      t.Scale(768),
       t.CaffeColorNormalize(meanstd),
-      Crop(448),
+      Crop(704),
     }
   else
     error('invalid split: ' .. self.split)
