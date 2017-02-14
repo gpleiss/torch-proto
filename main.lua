@@ -56,9 +56,12 @@ if not opt.testOnly then
     checkpoints.save(epoch, model, trainer.optimState, trainer.logger, bestModel, opt)
 
     if opt.saveScoresEveryEpoch then
+      local testResults = validator:test(epoch, testLoader)
       matio.save(opt.testScoresFilename .. '.epoch' .. epoch, {
         logits = valResults.logits,
-        labels = valResults.labels
+        labels = valResults.labels,
+        testLogits = testResults.logits,
+        testLabels = testResults.labels,
       })
     end
   end
