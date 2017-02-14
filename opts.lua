@@ -99,6 +99,13 @@ function M.parse(arg)
     specificOpts.batchSize = (opt.netType == '' or opt.netType == 'densenet') and 64 or 256
     specificOpts.nClasses = 100
 
+  elseif opt.dataset == 'birds' or opt.dataset == 'cars' then
+    specificOpts.netType = 'resnet'
+    specificOpts.shortcutType = 'A'
+    specificOpts.nEpochs = 50
+    specificOpts.batchSize = 32
+    specificOpts.nClasses = (opt.dataset == 'birds') and 200 or 196
+
   else
     cmd:error('unknown dataset: ' .. opt.dataset)
   end
