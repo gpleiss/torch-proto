@@ -3,10 +3,9 @@ local M = {
 }
 local Tester = torch.class('Tester', 'Runner', M)
 
-function Tester:__init(model, opt, logger, setName)
+function Tester:__init(model, opt, setName)
   self.model = model
   self.opt = opt
-  self.logger = logger
   self.setName = setName or 'Test'
 end
 
@@ -72,7 +71,6 @@ function Tester:test(epoch, dataloader)
     features = #featuresTable > 0 and torch.cat(featuresTable, 1):index(1, order) or nil,
     logits = torch.cat(logitsTable, 1):index(1, order),
     labels = torch.cat(labelTable, 1):index(1, order),
-    ops = self.logger.ops,
   }
 end
 

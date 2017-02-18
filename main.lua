@@ -25,7 +25,7 @@ if not opt.testOnly then
 
   -- The trainer handles the training loop and evaluation on validation set
   local trainer = Trainer(model, criterion, opt, optimState, logger)
-  local validator = Tester(model, opt, trainer.logger, 'valid')
+  local validator = Tester(model, opt, 'valid')
 
   -- Log parameters and number of floating point operations
   local opCounter = OpCounter(model, opt)
@@ -73,11 +73,11 @@ end
 -- Testing
 local loader = opt.testOnValid and valLoader or testLoader
 local bestModel, logger = checkpoints.best(opt)
-local tester = Tester(bestModel, opt, logger, 'test')
+local tester = Tester(bestModel, opt, 'test')
 
 local testResults = tester:test(nil, loader)
 matio.save(opt.testScoresFilename, {
-  features = testResults.features,
+  --features = testResults.features,
   logits = testResults.logits,
   labels = testResults.labels
 })

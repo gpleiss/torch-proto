@@ -29,12 +29,21 @@ end
 function checkpoint.best(opt)
   local bestPath = opt.modelFilename .. '.best'
   if not paths.filep(bestPath) then
-    return nil
+    bestPath = opt.modelFilename
+    if not paths.filep(bestPath) then
+      return nil
+    end
   end
 
   print('=> Loading best model ' .. bestPath)
   local model = torch.load(bestPath)
-  local logger = torch.load(opt.loggerFilename)
+
+  local logger
+  if paths.filep(opt.loggerFilename) then
+    logger = torch.load(opt.loggerFilename)
+  else
+    logger = {}
+  end
   return model, logger
 end
 
