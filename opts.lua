@@ -32,7 +32,6 @@ function M.parse(arg)
   cmd:option('-batchSize',     0,    'mini-batch size (1 = pure stochastic)')
   cmd:option('-nTrain',     math.huge,    'Number of training samples')
   cmd:option('-testOnly',      false, 'Run testing only')
-  cmd:option('-testOnValid',   false, 'Do final test on validation (rather than test) set')
   cmd:option('-tenCrop',      false, 'Ten-crop testing')
   cmd:option('-noAug', false, 'No data augmentation')
   ------------- Checkpointing options ---------------

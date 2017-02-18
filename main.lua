@@ -56,12 +56,9 @@ if not opt.testOnly then
     checkpoints.save(epoch, model, trainer.optimState, trainer.logger, bestModel, opt)
 
     if opt.saveScoresEveryEpoch then
-      local testResults = validator:test(epoch, testLoader)
       matio.save(opt.testScoresFilename .. '.epoch' .. epoch, {
         logits = valResults.logits,
         labels = valResults.labels,
-        testLogits = testResults.logits,
-        testLabels = testResults.labels,
       })
     end
   end
@@ -71,29 +68,53 @@ end
 
 
 -- Testing
-local loader = opt.testOnValid and valLoader or testLoader
 local bestModel, logger = checkpoints.best(opt)
 local tester = Tester(bestModel, opt, 'test')
 
-local testResults = tester:test(nil, loader)
-matio.save(opt.testScoresFilename, {
-  --features = testResults.features,
-  logits = testResults.logits,
-  labels = testResults.labels
-})
-
-if opt.testOnValid then
+if opt.dataset == 'imagenet' or opt.dataset == 'birds' or opt.dataset == 'cars' then
+  local valResults = tester:test(nil, valLoader)
   checkpoints.logResults(opt, logger, {
-    finalValidTop1 = testResults.top1,
-    finalValidTop5 = testResults.top5,
+    finalValidTop1 = valResults.top1,
+    finalValidTop5 = valResults.top5,
   })
+
+  local numValidSamples = valResults.labels:size(1)
+  local gen = torch.Generator()
+  torch.manualSeed(gen, opt.manualSeed)
+  local indices = torch.randperm(gen, numValidSamples):long()
+  local valIndices = indices[{{1, math.floor(numValidSamples/2)}}]
+  local testIndices = indices[{{math.floor(numValidSamples/2) + 1, numValidSamples}}]
+
+  matio.save(opt.testScoresFilename, {
+    logits = valResults.logits:index(1, valIndices),
+    labels = valResults.labels:index(1, valIndices),
+    testLogits = valResults.logits:index(1, testIndices),
+    testLabels = valResults.labels:index(1, testIndices),
+  })
+  print(string.format(' * Results top1: %6.3f  top5: %6.3f', valResults.top1, valResults.top5))
+
 else
+  local valResults = tester:test(nil, valLoader)
+  local testResults = tester:test(nil, testLoader)
+
+  checkpoints.logResults(opt, logger, {
+    finalValidTop1 = valResults.top1,
+    finalValidTop5 = valResults.top5,
+  })
   checkpoints.logResults(opt, logger, {
     testTop1 = testResults.top1,
     testTop5 = testResults.top5,
   })
+
+  matio.save(opt.testScoresFilename, {
+    logits = valResults.logits,
+    labels = valResults.labels,
+    testLogits = testResults.logits,
+    testLabels = testResults.labels
+  })
+
+  print(string.format(' * Results top1: %6.3f  top5: %6.3f', testResults.top1, testResults.top5))
 end
-print(string.format(' * Results top1: %6.3f  top5: %6.3f', testResults.top1, testResults.top5))
 
 
 --
