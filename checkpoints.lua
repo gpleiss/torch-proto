@@ -36,7 +36,7 @@ function checkpoint.best(opt)
   end
 
   print('=> Loading best model ' .. bestPath)
-  local model = torch.load(bestPath)
+  local model = torch.load(bestPath):cuda()
 
   local logger
   if paths.filep(opt.loggerFilename) then
